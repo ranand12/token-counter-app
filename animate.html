@@ -506,12 +506,12 @@
                     ctx.drawImage(scene.img, drawX, drawY, drawW, drawH);
                     ctx.restore();
 
-                    // Fade in/out between scenes
-                    if (frameInScene < transitionFrames) {
+                    // Fade in/out between scenes (skip fade-in on first, fade-out on last)
+                    if (frameInScene < transitionFrames && sceneIdx > 0) {
                         var fadeAlpha = 1 - (frameInScene / transitionFrames);
                         ctx.fillStyle = 'rgba(0,0,0,' + fadeAlpha + ')';
                         ctx.fillRect(0, 0, 1280, 720);
-                    } else if (frameInScene > framesPerScene - transitionFrames) {
+                    } else if (frameInScene > framesPerScene - transitionFrames && sceneIdx < sceneImages.length - 1) {
                         var fadeAlpha2 = (frameInScene - (framesPerScene - transitionFrames)) / transitionFrames;
                         ctx.fillStyle = 'rgba(0,0,0,' + fadeAlpha2 + ')';
                         ctx.fillRect(0, 0, 1280, 720);

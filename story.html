@@ -379,8 +379,9 @@
                         var imagePart = null;
                         if (imgData.candidates && imgData.candidates[0] && imgData.candidates[0].content && imgData.candidates[0].content.parts) {
                             imgData.candidates[0].content.parts.forEach(function(part) {
-                                if (part.inline_data && part.inline_data.mime_type && part.inline_data.mime_type.startsWith('image/')) {
-                                    imagePart = part.inline_data;
+                                var data = part.inlineData || part.inline_data;
+                                if (data && (data.mimeType || data.mime_type || '').startsWith('image/')) {
+                                    imagePart = data;
                                 }
                             });
                         }
@@ -393,7 +394,7 @@
                             var img = document.createElement('img');
                             img.className = 'page-image';
                             img.alt = 'Illustration for page ' + (i + 1);
-                            img.src = 'data:' + imagePart.mime_type + ';base64,' + imagePart.data;
+                            img.src = 'data:' + (imagePart.mimeType || imagePart.mime_type) + ';base64,' + imagePart.data;
                             container.appendChild(img);
                         } else {
                             var fallback = document.createElement('div');
