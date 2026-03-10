@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini Token Counter</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Google Sans', 'Segoe UI', sans-serif;
+            background: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            padding: 40px;
+            max-width: 640px;
+            width: 100%;
+        }
+        h1 {
+            color: #1a73e8;
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            color: #5f6368;
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+        textarea {
+            width: 100%;
+            height: 200px;
+            border: 2px solid #dadce0;
+            border-radius: 12px;
+            padding: 16px;
+            font-size: 15px;
+            font-family: inherit;
+            resize: vertical;
+            transition: border-color 0.2s;
+            outline: none;
+        }
+        textarea:focus { border-color: #1a73e8; }
+        button {
+            margin-top: 16px;
+            background: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 28px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        button:hover { background: #1557b0; }
+        button:disabled { background: #a8c7fa; cursor: not-allowed; }
+        .result {
+            margin-top: 24px;
+            padding: 20px;
+            background: #e8f0fe;
+            border-radius: 12px;
+            display: none;
+        }
+        .result.visible { display: block; }
+        .token-count {
+            font-size: 48px;
+            font-weight: 700;
+            color: #1a73e8;
+        }
+        .token-label {
+            font-size: 14px;
+            color: #5f6368;
+            margin-top: 4px;
+        }
+        .error {
+            margin-top: 16px;
+            color: #d93025;
+            font-size: 14px;
+            display: none;
+        }
+        .error.visible { display: block; }
+        .info {
+            margin-top: 16px;
+            font-size: 13px;
+            color: #80868b;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Gemini Token Counter</h1>
+        <p class="subtitle">Count tokens using the Gemini API's <code>count_tokens</code> method (no LLM call).</p>
+
+        <textarea id="text-input" placeholder="Type or paste your text here..."></textarea>
+        <button id="count-btn" onclick="countTokens()">Count Tokens</button>
+
+        <div class="result" id="result">
+            <div class="token-count" id="token-count">0</div>
+            <div class="token-label">tokens</div>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <p class="info">Model: gemini-2.5-flash &bull; ~100 tokens = 60-80 English words</p>
+    </div>
+
+    <script>
+        async function countTokens() {
+            const text = document.getElementById('text-input').value;
+            const btn = document.getElementById('count-btn');
+            const result = document.getElementById('result');
+            const error = document.getElementById('error');
+
+            error.classList.remove('visible');
+
+            if (!text.trim()) {
+                result.classList.add('visible');
+                document.getElementById('token-count').textContent = '0';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.textContent = 'Counting...';
+
+            try {
+                const resp = await fetch('/count', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text }),
+                });
+
+                if (!resp.ok) throw new Error('API request failed');
+
+                const data = await resp.json();
+                document.getElementById('token-count').textContent = data.total_tokens;
+                result.classList.add('visible');
+            } catch (err) {
+                error.textContent = 'Error: ' + err.message;
+                error.classList.add('visible');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Count Tokens';
+            }
+        }
+    </script>
+</body>
+</html>

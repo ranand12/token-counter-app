@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gemini Model Explorer</title>
+    <!--
+    Copyright 2026 Google LLC.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        https://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+    -->
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Google Sans', 'Segoe UI', sans-serif;
+            background: #f8f9fa;
+            min-height: 100vh;
+            padding: 32px 20px;
+        }
+        .page {
+            max-width: 960px;
+            margin: 0 auto;
+        }
+        .header {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            padding: 32px 40px;
+            margin-bottom: 24px;
+        }
+        h1 {
+            color: #1a73e8;
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            color: #5f6368;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .subtitle a { color: #1a73e8; text-decoration: none; }
+        .subtitle a:hover { text-decoration: underline; }
+        label {
+            font-size: 13px;
+            color: #5f6368;
+            display: block;
+            margin-bottom: 6px;
+        }
+        .controls {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+        .controls .field { flex: 1; min-width: 200px; }
+        input[type="password"], input[type="text"] {
+            width: 100%;
+            border: 2px solid #dadce0;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 14px;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        input:focus { border-color: #1a73e8; }
+        button {
+            background: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+        button:hover { background: #1557b0; }
+        button:disabled { background: #a8c7fa; cursor: not-allowed; }
+
+        .toolbar {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            padding: 16px 24px;
+            margin-bottom: 20px;
+            position: sticky;
+            top: 12px;
+            z-index: 10;
+        }
+        .toolbar input {
+            margin-bottom: 12px;
+        }
+        .stats {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .stat-chip {
+            background: #e8f0fe;
+            color: #1a73e8;
+            border-radius: 20px;
+            padding: 6px 16px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+            border: 2px solid transparent;
+        }
+        .stat-chip:hover {
+            background: #d2e3fc;
+        }
+        .stat-chip.active {
+            background: #1a73e8;
+            color: white;
+            border-color: #1a73e8;
+        }
+
+        .error {
+            background: white;
+            border-radius: 12px;
+            padding: 16px 24px;
+            color: #d93025;
+            font-size: 14px;
+            margin-bottom: 16px;
+            display: none;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        }
+        .error.visible { display: block; }
+
+        .model-grid {
+            display: grid;
+            gap: 16px;
+        }
+
+        .model-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            padding: 24px;
+            transition: box-shadow 0.2s;
+        }
+        .model-card:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+        }
+        .model-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+        .model-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #202124;
+        }
+        .model-id {
+            font-size: 12px;
+            color: #80868b;
+            font-family: 'Roboto Mono', monospace;
+            margin-top: 2px;
+        }
+        .model-version {
+            font-size: 11px;
+            color: white;
+            background: #5f6368;
+            border-radius: 4px;
+            padding: 2px 8px;
+            white-space: nowrap;
+        }
+        .model-description {
+            font-size: 13px;
+            color: #5f6368;
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+        .model-stats {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .model-stat {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 10px 14px;
+            flex: 1;
+            min-width: 120px;
+        }
+        .model-stat-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #1a73e8;
+        }
+        .model-stat-label {
+            font-size: 11px;
+            color: #80868b;
+            margin-top: 2px;
+        }
+        .model-pricing {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+        .model-pricing-stat {
+            background: #fef7e0;
+            border-radius: 8px;
+            padding: 10px 14px;
+            flex: 1;
+            min-width: 120px;
+        }
+        .model-pricing-stat .model-stat-value {
+            color: #b06000;
+        }
+        .pricing-note {
+            font-size: 11px;
+            color: #80868b;
+            margin-top: 8px;
+        }
+        .pricing-note a { color: #1a73e8; text-decoration: none; }
+        .pricing-note a:hover { text-decoration: underline; }
+        .live-api-section {
+            margin-top: 10px;
+            padding: 12px 14px;
+            background: #f3e8fd;
+            border-radius: 8px;
+        }
+        .live-api-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #7627bb;
+            margin-bottom: 8px;
+        }
+        .live-api-grid {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .live-api-stat {
+            flex: 1;
+            min-width: 90px;
+        }
+        .live-api-stat .model-stat-value {
+            font-size: 15px;
+            color: #7627bb;
+        }
+        .live-api-stat .model-stat-label {
+            font-size: 10px;
+        }
+        .model-tags {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+        .tag {
+            font-size: 11px;
+            padding: 3px 10px;
+            border-radius: 12px;
+            background: #f1f3f4;
+            color: #5f6368;
+        }
+        .tag.thinking {
+            background: #fce8e6;
+            color: #d93025;
+        }
+        .tag.generate {
+            background: #e6f4ea;
+            color: #137333;
+        }
+        .tag.embed {
+            background: #fef7e0;
+            color: #b06000;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 60px 20px;
+            color: #80868b;
+            font-size: 15px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #80868b;
+            font-size: 15px;
+        }
+
+        code { background: #f1f3f4; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="header">
+            <h1>Gemini Model Explorer</h1>
+            <p class="subtitle">Browse all available Gemini models and their capabilities. &bull; <a href="index.html">Token Counter</a></p>
+
+            <div class="controls">
+                <button id="load-btn" onclick="loadModels()">Reload Models</button>
+            </div>
+        </div>
+
+        <div class="toolbar" id="toolbar" style="display: none;">
+            <input type="text" id="search" placeholder="Search models..." oninput="applyFilters()">
+            <div class="stats" id="stats"></div>
+        </div>
+
+        <div class="model-count" id="model-count" style="font-size: 13px; color: #80868b; margin-bottom: 12px; display: none;"></div>
+
+        <div class="error" id="error"></div>
+
+        <div class="model-grid" id="model-grid"></div>
+    </div>
+
+    <script>
+        // Pricing data loaded from pricing.json (generated by update_pricing.py)
+        // Run: python3 update_pricing.py   to refresh from the Vertex AI pricing page
+        let PRICING_DATA = {};
+        let PRICING_DATE = '';
+        let pricingLoaded = false;
+
+        // Sorted model ID prefixes for longest-first matching
+        let PRICING_KEYS = [];
+
+        async function loadPricing() {
+            try {
+                const resp = await fetch('./pricing.json');
+                if (!resp.ok) throw new Error('Failed to load pricing.json');
+                const data = await resp.json();
+                PRICING_DATA = data.models || {};
+                PRICING_DATE = data.date || '';
+                PRICING_KEYS = Object.keys(PRICING_DATA).sort((a, b) => b.length - a.length);
+                pricingLoaded = true;
+                console.log(`Loaded pricing for ${PRICING_KEYS.length} models (${PRICING_DATE})`);
+            } catch (err) {
+                console.warn('Could not load pricing.json:', err.message);
+                console.warn('Run: python3 update_pricing.py  to generate it');
+            }
+        }
+
+        function getPricing(modelId) {
+            // Exact match first
+            if (PRICING_DATA[modelId]) return PRICING_DATA[modelId];
+            // Longest-prefix match
+            for (const key of PRICING_KEYS) {
+                if (modelId.startsWith(key)) return PRICING_DATA[key];
+            }
+            return null;
+        }
+
+        // Load pricing immediately on page load
+        loadPricing();
+
+        let allModels = [];
+        let activeFilter = 'all';
+
+        async function loadModels() {
+            const error = document.getElementById('error');
+            const grid = document.getElementById('model-grid');
+            const btn = document.getElementById('load-btn');
+
+            error.classList.remove('visible');
+
+            btn.disabled = true;
+            btn.textContent = 'Loading...';
+            grid.innerHTML = '<div class="loading">Fetching models...</div>';
+
+            try {
+                allModels = [];
+                let pageToken = '';
+
+                do {
+                    const url = '/models' + (pageToken ? `?pageToken=${encodeURIComponent(pageToken)}` : '');
+                    const resp = await fetch(url);
+                    const data = await resp.json();
+                    if (data.error) throw new Error(data.error);
+                    allModels = allModels.concat(data.models || []);
+                    pageToken = data.nextPageToken || '';
+                } while (pageToken);
+
+                allModels.sort((a, b) => (a.displayName || a.name).localeCompare(b.displayName || b.name));
+
+                document.getElementById('toolbar').style.display = 'block';
+                activeFilter = 'all';
+                buildChips();
+                applyFilters();
+            } catch (err) {
+                grid.innerHTML = '';
+                error.textContent = err.message;
+                error.classList.add('visible');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Reload Models';
+            }
+        }
+
+        // Auto-load models on page load
+        loadModels();
+
+        function getCounts(models) {
+            return {
+                all: models.length,
+                generative: models.filter(m => m.supportedGenerationMethods?.includes('generateContent')).length,
+                embedding: models.filter(m => m.supportedGenerationMethods?.includes('embedContent')).length,
+                thinking: models.filter(m => m.thinking).length,
+                priced: models.filter(m => getPricing(m.name?.replace('models/', '') || '')).length,
+            };
+        }
+
+        function buildChips() {
+            const counts = getCounts(allModels);
+            const statsDiv = document.getElementById('stats');
+            statsDiv.innerHTML = [
+                { key: 'all',        label: `All ${counts.all}` },
+                { key: 'generative', label: `Generative ${counts.generative}` },
+                { key: 'embedding',  label: `Embedding ${counts.embedding}` },
+                { key: 'thinking',   label: `Thinking ${counts.thinking}` },
+                { key: 'priced',     label: `With pricing ${counts.priced}` },
+            ].map(c =>
+                `<div class="stat-chip${activeFilter === c.key ? ' active' : ''}" data-filter="${c.key}" onclick="toggleFilter('${c.key}')">${c.label}</div>`
+            ).join('');
+        }
+
+        function toggleFilter(key) {
+            activeFilter = activeFilter === key ? 'all' : key;
+            buildChips();
+            applyFilters();
+        }
+
+        function applyFilters() {
+            const query = document.getElementById('search').value.toLowerCase();
+            let filtered = allModels;
+
+            // Apply category filter
+            if (activeFilter === 'generative') {
+                filtered = filtered.filter(m => m.supportedGenerationMethods?.includes('generateContent'));
+            } else if (activeFilter === 'embedding') {
+                filtered = filtered.filter(m => m.supportedGenerationMethods?.includes('embedContent'));
+            } else if (activeFilter === 'thinking') {
+                filtered = filtered.filter(m => m.thinking);
+            } else if (activeFilter === 'priced') {
+                filtered = filtered.filter(m => getPricing(m.name?.replace('models/', '') || ''));
+            }
+
+            // Apply text search
+            if (query) {
+                filtered = filtered.filter(m => {
+                    const name = (m.displayName || '').toLowerCase();
+                    const id = (m.name || '').toLowerCase();
+                    const desc = (m.description || '').toLowerCase();
+                    return name.includes(query) || id.includes(query) || desc.includes(query);
+                });
+            }
+
+            const countEl = document.getElementById('model-count');
+            countEl.style.display = 'block';
+            countEl.textContent = `Showing ${filtered.length} of ${allModels.length} models`;
+            renderModels(filtered);
+        }
+
+        function formatNumber(n) {
+            if (n == null) return '—';
+            if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+            if (n >= 1000) return (n / 1000).toFixed(0) + 'K';
+            return n.toLocaleString();
+        }
+
+        function renderModels(models) {
+            const grid = document.getElementById('model-grid');
+
+            if (models.length === 0) {
+                grid.innerHTML = '<div class="empty">No models found.</div>';
+                return;
+            }
+
+            grid.innerHTML = models.map(m => {
+                const modelId = m.name?.replace('models/', '') || '';
+                const methods = m.supportedGenerationMethods || [];
+
+                const tags = [];
+                if (m.thinking) tags.push('<span class="tag thinking">Thinking</span>');
+                if (methods.includes('generateContent')) tags.push('<span class="tag generate">generateContent</span>');
+                if (methods.includes('embedContent')) tags.push('<span class="tag embed">embedContent</span>');
+                methods.filter(x => x !== 'generateContent' && x !== 'embedContent')
+                    .forEach(x => tags.push(`<span class="tag">${x}</span>`));
+
+                return `
+                    <div class="model-card">
+                        <div class="model-card-header">
+                            <div>
+                                <div class="model-name">${m.displayName || modelId}</div>
+                                <div class="model-id">${modelId}</div>
+                            </div>
+                            ${m.version ? `<span class="model-version">v${m.version}</span>` : ''}
+                        </div>
+                        ${m.description ? `<div class="model-description">${m.description}</div>` : ''}
+                        <div class="model-stats">
+                            <div class="model-stat">
+                                <div class="model-stat-value">${formatNumber(m.inputTokenLimit)}</div>
+                                <div class="model-stat-label">Input tokens</div>
+                            </div>
+                            <div class="model-stat">
+                                <div class="model-stat-value">${formatNumber(m.outputTokenLimit)}</div>
+                                <div class="model-stat-label">Output tokens</div>
+                            </div>
+                        </div>
+                        ${renderPricing(modelId)}
+                        ${tags.length ? `<div class="model-tags">${tags.join('')}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderPricing(modelId) {
+            const p = getPricing(modelId);
+            if (!p) {
+                return `<div class="pricing-note">Pricing unavailable &mdash; <a href="https://cloud.google.com/vertex-ai/generative-ai/pricing" target="_blank">check pricing page</a></div>`;
+            }
+            return `
+                <div class="model-pricing">
+                    <div class="model-pricing-stat">
+                        <div class="model-stat-value">$${p.input}</div>
+                        <div class="model-stat-label">Input / 1M tokens</div>
+                    </div>
+                    <div class="model-pricing-stat">
+                        <div class="model-stat-value">$${p.output}</div>
+                        <div class="model-stat-label">Output / 1M tokens</div>
+                    </div>
+                    ${p.inputAudio != null ? `
+                    <div class="model-pricing-stat">
+                        <div class="model-stat-value">$${p.inputAudio}</div>
+                        <div class="model-stat-label">Audio input / 1M</div>
+                    </div>` : ''}
+                    ${p.cached != null ? `
+                    <div class="model-pricing-stat">
+                        <div class="model-stat-value">$${p.cached}</div>
+                        <div class="model-stat-label">Cached input / 1M</div>
+                    </div>` : ''}
+                    ${p.imageOutput != null ? `
+                    <div class="model-pricing-stat">
+                        <div class="model-stat-value">$${p.imageOutput}</div>
+                        <div class="model-stat-label">Image output / 1M</div>
+                    </div>` : ''}
+                </div>
+                ${p.note ? `<div class="pricing-note" style="color: #d93025; font-weight: 500;">${p.note}</div>` : ''}
+                ${p.live ? `
+                <div class="live-api-section">
+                    <div class="live-api-label">Live API pricing / 1M tokens</div>
+                    <div class="live-api-grid">
+                        <div class="live-api-stat">
+                            <div class="model-stat-value">$${p.live.inputText}</div>
+                            <div class="model-stat-label">Text in</div>
+                        </div>
+                        <div class="live-api-stat">
+                            <div class="model-stat-value">$${p.live.inputAudio}</div>
+                            <div class="model-stat-label">Audio in</div>
+                        </div>
+                        <div class="live-api-stat">
+                            <div class="model-stat-value">$${p.live.inputVideo}</div>
+                            <div class="model-stat-label">Video in</div>
+                        </div>
+                        <div class="live-api-stat">
+                            <div class="model-stat-value">$${p.live.outputText}</div>
+                            <div class="model-stat-label">Text out</div>
+                        </div>
+                        <div class="live-api-stat">
+                            <div class="model-stat-value">$${p.live.outputAudio}</div>
+                            <div class="model-stat-label">Audio out</div>
+                        </div>
+                    </div>
+                </div>` : ''}
+                <div class="pricing-note">Pricing as of ${PRICING_DATE || 'unknown date'} &mdash; <a href="https://cloud.google.com/vertex-ai/generative-ai/pricing" target="_blank">verify on pricing page</a></div>
+            `;
+        }
+    </script>
+</body>
+</html>
