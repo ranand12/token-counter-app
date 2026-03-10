@@ -446,7 +446,7 @@
     </div>
 
     <script>
-        const WS_BASE = 'wss://generativelanguage.googleapis.com/v1beta/models';
+        const WS_URL = 'wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent';
         const MODEL = 'gemini-2.5-flash-native-audio-preview-12-2025';
         const INPUT_SAMPLE_RATE = 16000;
         const OUTPUT_SAMPLE_RATE = 24000;
@@ -562,7 +562,7 @@
 
             setStatus('connecting');
 
-            var url = WS_BASE + '/' + MODEL + ':bidiGenerateContent?key=' + encodeURIComponent(apiKey);
+            var url = WS_URL + '?key=' + encodeURIComponent(apiKey);
             ws = new WebSocket(url);
 
             ws.onopen = function() {
@@ -613,14 +613,20 @@
                 }
             };
 
-            ws.onerror = function() {
-                showError('WebSocket connection error. Check your API key and try again.');
+            ws.onerror = function(event) {
+                console.error('WebSocket error:', event);
+                showError('WebSocket connection failed. Verify your API key is valid and has Live API access enabled.');
                 disconnect();
             };
 
             ws.onclose = function(event) {
-                if (connected) {
-                    addMessage('system', 'Connection closed' + (event.reason ? ': ' + event.reason : ''));
+                var reason = event.reason || '';
+                if (event.code === 1008 || event.code === 403) {
+                    showError('Authentication failed. Check your API key.');
+                } else if (connected) {
+                    addMessage('system', 'Connection closed' + (reason ? ': ' + reason : ' (code ' + event.code + ')'));
+                } else if (event.code !== 1000) {
+                    showError('Connection closed unexpectedly (code ' + event.code + '). ' + reason);
                 }
                 disconnect();
             };
