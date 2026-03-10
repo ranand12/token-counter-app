@@ -265,11 +265,11 @@
         };
 
         var PRESETS = {
-            'points-identify': 'Point to no more than 10 items in the image.\nThe answer should follow the json format: [{"point": <point>, "label": <label>}, ...]. The points are in [y, x] format normalized to 0-1000.',
-            'points-explain': 'Point to no more than 10 items in the image.\nThe answer should follow the json format: [{"point": <point>, "label": <label>}, ...]. The points are in [y, x] format normalized to 0-1000.\nExplain how to use each part, put the explanation in the label field.',
-            'points-safety': 'Point to no more than 10 items in the image that could be safety hazards.\nThe answer should follow the json format: [{"point": <point>, "label": <label>}, ...]. The points are in [y, x] format normalized to 0-1000.\nExplain how to prevent injury, put the advice in the label field.',
-            '3d-detect': 'Detect the 3D bounding boxes of no more than 10 items.\nOutput a json list where each entry contains the object name in "label" and its 3D bounding box in "box_3d".\nThe 3D bounding box format should be [x_center, y_center, z_center, x_size, y_size, z_size, roll, pitch, yaw].',
-            '3d-search': 'Detect the 3D bounding boxes of the following objects: [describe objects here].\nOutput a json list where each entry contains the object name in "label" and its 3D bounding box in "box_3d".\nThe 3D bounding box format should be [x_center, y_center, z_center, x_size, y_size, z_size, roll, pitch, yaw].'
+            'points-identify': 'Point to no more than 10 items in the image.\nReturn a JSON array: [{"point": [y, x], "label": "item name"}]. The points are in [y, x] format normalized to 0-1000.',
+            'points-explain': 'Point to no more than 10 items in the image.\nReturn a JSON array: [{"point": [y, x], "label": "item name"}]. The points are in [y, x] format normalized to 0-1000.\nExplain how to use each part, put the explanation in the label field.',
+            'points-safety': 'Point to no more than 10 items in the image that could be safety hazards.\nReturn a JSON array: [{"point": [y, x], "label": "item name"}]. The points are in [y, x] format normalized to 0-1000.\nExplain how to prevent injury, put the advice in the label field.',
+            '3d-detect': 'Detect the 3D bounding boxes of no more than 10 items.\nReturn a JSON array: [{"label": "object name", "box_3d": [x_center, y_center, z_center, x_size, y_size, z_size, roll, pitch, yaw]}].',
+            '3d-search': 'Detect the 3D bounding boxes of the following objects: [describe objects here].\nReturn a JSON array: [{"label": "object name", "box_3d": [x_center, y_center, z_center, x_size, y_size, z_size, roll, pitch, yaw]}].'
         };
 
         var COLORS = ['#2962FF','#00C853','#FF6D00','#AA00FF','#D50000','#00BFA5','#FFD600','#C51162','#304FFE','#64DD17'];
