@@ -7,14 +7,15 @@
     <title>Gemini Tools</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="nav.css">
     <style>
         :root {
-            --bg: #ffffff;
-            --bg-elevated: #f5f6f8;
+            --bg: #f8f9fc;
+            --bg-elevated: #ffffff;
             --bg-card: #ffffff;
-            --border: #e2e4e9;
+            --bg-card-hover: #ffffff;
+            --border: #e4e7ee;
             --border-focus: #4f46e5;
             --text: #111318;
             --text-secondary: #4b5060;
@@ -30,17 +31,19 @@
             --amber-soft: #fffbeb;
             --purple: #7c3aed;
             --purple-soft: #f5f3ff;
-            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
-            --shadow-lg: 0 8px 24px rgba(0,0,0,0.1);
-            --radius: 12px;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.06);
+            --shadow-lg: 0 12px 40px rgba(0,0,0,0.1);
+            --radius: 16px;
+            --dot-color: #d8dbe4;
         }
 
         [data-theme="dark"] {
-            --bg: #0e1117;
-            --bg-elevated: #161b26;
-            --bg-card: #1c2132;
-            --border: #2a3045;
+            --bg: #0b0e14;
+            --bg-elevated: #141824;
+            --bg-card: #161b2a;
+            --bg-card-hover: #1c2236;
+            --border: #232a3e;
             --border-focus: #818cf8;
             --text: #eceef4;
             --text-secondary: #9399ae;
@@ -57,8 +60,9 @@
             --purple: #a78bfa;
             --purple-soft: #7c3aed20;
             --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
-            --shadow-md: 0 4px 12px rgba(0,0,0,0.3);
-            --shadow-lg: 0 8px 24px rgba(0,0,0,0.4);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.25);
+            --shadow-lg: 0 12px 40px rgba(0,0,0,0.35);
+            --dot-color: #1e2438;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -69,9 +73,37 @@
             color: var(--text);
             min-height: 100vh;
             transition: background 0.3s, color 0.3s;
+            position: relative;
+        }
+
+        /* Dot grid background */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: radial-gradient(var(--dot-color) 1px, transparent 1px);
+            background-size: 24px 24px;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Gradient orb behind hero */
+        body::after {
+            content: '';
+            position: fixed;
+            top: -120px;
+            right: -80px;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+            opacity: 0.05;
+            pointer-events: none;
+            z-index: 0;
         }
 
         .hero {
+            position: relative;
+            z-index: 1;
             max-width: 1200px;
             margin: 0 auto;
             padding: 60px 32px 20px;
@@ -130,6 +162,7 @@
             color: var(--text-muted);
             opacity: 0;
             animation: fadeUp 0.6s ease 0.3s forwards;
+            box-shadow: var(--shadow-sm);
         }
 
         .tool-count strong {
@@ -139,6 +172,8 @@
 
         /* Sections */
         .sections {
+            position: relative;
+            z-index: 1;
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px 32px 80px;
@@ -192,8 +227,8 @@
         /* Cards Grid */
         .cards {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-            gap: 14px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
         }
 
         .card {
@@ -201,35 +236,67 @@
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 22px 22px 20px;
+            padding: 24px;
             text-decoration: none;
             color: inherit;
             display: flex;
             flex-direction: column;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
             overflow: hidden;
             cursor: pointer;
+            box-shadow: var(--shadow-sm);
         }
 
+        /* Colored left accent bar */
         .card::before {
             content: '';
             position: absolute;
-            top: 0;
+            top: 12px;
             left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, var(--card-accent, var(--accent)), transparent);
+            bottom: 12px;
+            width: 3px;
+            border-radius: 0 3px 3px 0;
+            background: var(--card-accent, var(--accent));
             opacity: 0;
-            transition: opacity 0.3s ease;
+            transform: scaleY(0);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        /* Glow effect behind card on hover */
+        .card::after {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: var(--radius);
+            background: radial-gradient(
+                600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+                var(--card-glow, rgba(79, 70, 229, 0.06)),
+                transparent 40%
+            );
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .card > * {
+            position: relative;
+            z-index: 1;
         }
 
         .card:hover {
-            border-color: var(--card-accent, var(--accent));
-            box-shadow: var(--shadow-lg);
-            transform: translateY(-4px);
+            border-color: color-mix(in srgb, var(--card-accent, var(--accent)) 40%, var(--border));
+            box-shadow: var(--shadow-lg), 0 0 0 1px color-mix(in srgb, var(--card-accent, var(--accent)) 10%, transparent);
+            transform: translateY(-3px);
+            background: var(--bg-card-hover);
         }
 
         .card:hover::before {
+            opacity: 1;
+            transform: scaleY(1);
+        }
+
+        .card:hover::after {
             opacity: 1;
         }
 
@@ -237,24 +304,31 @@
             display: flex;
             align-items: flex-start;
             justify-content: space-between;
-            margin-bottom: 8px;
+            margin-bottom: 14px;
         }
 
         .card-emoji {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
+            font-size: 24px;
             background: var(--card-bg, var(--accent-soft));
             flex-shrink: 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 2px 8px color-mix(in srgb, var(--card-accent, var(--accent)) 12%, transparent);
+        }
+
+        .card:hover .card-emoji {
+            transform: scale(1.08) rotate(-3deg);
+            box-shadow: 0 4px 14px color-mix(in srgb, var(--card-accent, var(--accent)) 20%, transparent);
         }
 
         .card-arrow {
-            width: 28px;
-            height: 28px;
+            width: 30px;
+            height: 30px;
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -263,9 +337,9 @@
             border: 1px solid var(--border);
             color: var(--text-muted);
             font-size: 14px;
-            transition: all 0.25s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             opacity: 0;
-            transform: translateX(-4px);
+            transform: translateX(-6px);
         }
 
         .card:hover .card-arrow {
@@ -277,12 +351,12 @@
         }
 
         .card-name {
-            font-size: 16px;
+            font-size: 17px;
             font-weight: 600;
-            letter-spacing: -0.01em;
-            margin-bottom: 4px;
+            letter-spacing: -0.015em;
+            margin-bottom: 6px;
             color: var(--text);
-            transition: color 0.2s;
+            transition: color 0.25s;
         }
 
         .card:hover .card-name {
@@ -290,26 +364,23 @@
         }
 
         .card-desc {
-            font-size: 13px;
+            font-size: 13.5px;
             color: var(--text-muted);
-            line-height: 1.5;
-            max-height: 0;
-            opacity: 0;
-            overflow: hidden;
-            transition: max-height 0.35s ease, opacity 0.25s ease, margin 0.3s ease;
-            margin-top: 0;
+            line-height: 1.55;
+            margin-bottom: 2px;
+            transition: color 0.25s;
         }
 
         .card:hover .card-desc {
-            max-height: 60px;
-            opacity: 1;
-            margin-top: 6px;
+            color: var(--text-secondary);
         }
 
         .card-tag {
-            display: inline-block;
-            margin-top: 10px;
-            padding: 3px 10px;
+            display: inline-flex;
+            align-items: center;
+            align-self: flex-start;
+            margin-top: 14px;
+            padding: 4px 12px;
             border-radius: 100px;
             font-family: 'Space Mono', monospace;
             font-size: 10px;
@@ -318,23 +389,33 @@
             letter-spacing: 0.06em;
             color: var(--card-accent, var(--accent));
             background: var(--card-bg, var(--accent-soft));
-            opacity: 0.8;
+            border: 1px solid color-mix(in srgb, var(--card-accent, var(--accent)) 15%, transparent);
+            transition: all 0.25s ease;
+        }
+
+        .card:hover .card-tag {
+            background: color-mix(in srgb, var(--card-accent, var(--accent)) 12%, transparent);
+            border-color: color-mix(in srgb, var(--card-accent, var(--accent)) 25%, transparent);
         }
 
         /* Category colors */
-        .section[data-cat="analyze"] { --cat-accent: #4f46e5; --cat-bg: #eef2ff; }
-        .section[data-cat="vision"] { --cat-accent: #059669; --cat-bg: #ecfdf5; }
-        .section[data-cat="text"] { --cat-accent: #d97706; --cat-bg: #fffbeb; }
-        .section[data-cat="ai"] { --cat-accent: #7c3aed; --cat-bg: #f5f3ff; }
-        .section[data-cat="creative"] { --cat-accent: #dc2626; --cat-bg: #fef2f2; }
+        .section[data-cat="explore"] { --cat-accent: #4f46e5; --cat-bg: #eef2ff; --cat-glow: rgba(79, 70, 229, 0.06); }
+        .section[data-cat="multimodal"] { --cat-accent: #0891b2; --cat-bg: #ecfeff; --cat-glow: rgba(8, 145, 178, 0.06); }
+        .section[data-cat="research"] { --cat-accent: #059669; --cat-bg: #ecfdf5; --cat-glow: rgba(5, 150, 105, 0.06); }
+        .section[data-cat="tools"] { --cat-accent: #7c3aed; --cat-bg: #f5f3ff; --cat-glow: rgba(124, 58, 237, 0.06); }
+        .section[data-cat="create"] { --cat-accent: #d97706; --cat-bg: #fffbeb; --cat-glow: rgba(217, 119, 6, 0.06); }
 
-        [data-theme="dark"] .section[data-cat="analyze"] { --cat-bg: #4f46e520; }
-        [data-theme="dark"] .section[data-cat="vision"] { --cat-bg: #05966920; }
-        [data-theme="dark"] .section[data-cat="text"] { --cat-bg: #d9770620; }
-        [data-theme="dark"] .section[data-cat="ai"] { --cat-bg: #7c3aed20; }
-        [data-theme="dark"] .section[data-cat="creative"] { --cat-bg: #dc262620; }
+        [data-theme="dark"] .section[data-cat="explore"] { --cat-bg: #4f46e518; --cat-glow: rgba(99, 102, 241, 0.08); }
+        [data-theme="dark"] .section[data-cat="multimodal"] { --cat-bg: #0891b218; --cat-glow: rgba(8, 145, 178, 0.08); }
+        [data-theme="dark"] .section[data-cat="research"] { --cat-bg: #05966918; --cat-glow: rgba(52, 211, 153, 0.08); }
+        [data-theme="dark"] .section[data-cat="tools"] { --cat-bg: #7c3aed18; --cat-glow: rgba(167, 139, 250, 0.08); }
+        [data-theme="dark"] .section[data-cat="create"] { --cat-bg: #d9770618; --cat-glow: rgba(251, 191, 36, 0.08); }
 
-        .section[data-cat] .card { --card-accent: var(--cat-accent); --card-bg: var(--cat-bg); }
+        .section[data-cat] .card {
+            --card-accent: var(--cat-accent);
+            --card-bg: var(--cat-bg);
+            --card-glow: var(--cat-glow);
+        }
 
         /* Animations */
         @keyframes fadeUp {
@@ -346,10 +427,10 @@
         @media (max-width: 640px) {
             .hero { padding: 40px 20px 12px; }
             .sections { padding: 16px 20px 60px; }
-            .cards { grid-template-columns: 1fr; gap: 10px; }
+            .cards { grid-template-columns: 1fr; gap: 12px; }
             .hero h1 { font-size: 32px; }
-            .card-desc { max-height: 60px; opacity: 1; margin-top: 6px; }
             .card-arrow { opacity: 1; transform: translateX(0); }
+            .card::before { opacity: 1; transform: scaleY(1); }
         }
     </style>
     <script>
@@ -373,34 +454,34 @@
 <script>
 (function() {
     var tools = [
-        { cat: 'Analyze', catId: 'analyze', icon: '\u{1F50D}', items: [
-            { href: 'index.html', icon: '\u{1F522}', name: 'Token Counter', desc: 'Count tokens for text, images, and files. Estimate costs across all Gemini models.', tag: 'Core' },
-            { href: 'models.html', icon: '\u{1F916}', name: 'Model Explorer', desc: 'Browse all available Gemini models with specs, pricing, and capability details.', tag: 'Reference' },
+        { cat: 'Create', catId: 'create', icon: '\u{1F3A8}', items: [
+            { href: 'tts.html', icon: '\u{1F399}\uFE0F', name: 'Text to Speech', desc: 'Generate natural-sounding speech from text with multiple voice options.', tag: 'Audio' },
+            { href: 'story.html', icon: '\u{1F4D6}', name: 'Story Illustrator', desc: 'Generate illustrated storybooks with consistent characters and scenes.', tag: 'Images' },
+            { href: 'animate.html', icon: '\u{1F3AC}', name: 'Animated Video', desc: 'Create AI-generated story videos with narration and animation.', tag: 'Video' },
         ]},
-        { cat: 'Vision', catId: 'vision', icon: '\u{1F441}', items: [
-            { href: 'describe.html', icon: '\u{1F5BC}', name: 'Image Describer', desc: 'Upload any image and get detailed AI-generated descriptions and analysis.', tag: 'Multimodal' },
-            { href: 'detect.html', icon: '\u{1F3AF}', name: 'Object Detector', desc: 'Detect and locate objects in images with labeled bounding boxes.', tag: 'Multimodal' },
-            { href: 'video.html', icon: '\u{1F3AC}', name: 'Video Analyzer', desc: 'Upload videos and ask questions about their content, scenes, and details.', tag: 'Multimodal' },
-        ]},
-        { cat: 'Text & Data', catId: 'text', icon: '\u{1F4DD}', items: [
-            { href: 'prompt.html', icon: '\u{1F4AC}', name: 'Playground', desc: 'Chat with Gemini using custom system instructions and model parameters.', tag: 'Chat' },
+        { cat: 'Tools', catId: 'tools', icon: '\u2699\uFE0F', items: [
+            { href: 'think.html', icon: '\u{1F9E0}', name: 'Thinking', desc: 'See the model\'s step-by-step reasoning process for complex problems.', tag: 'Reasoning' },
+            { href: 'code.html', icon: '\u{1F4BB}', name: 'Code Runner', desc: 'Generate and execute Python code with automatic error correction.', tag: 'Execution' },
+            { href: 'maps.html', icon: '\u{1F5FA}\uFE0F', name: 'Maps', desc: 'Location-aware queries with Google Maps integration and visualization.', tag: 'Grounding' },
             { href: 'extract.html', icon: '\u{1F4CB}', name: 'Extractor', desc: 'Extract structured data from unstructured text using JSON schemas.', tag: 'Structured' },
             { href: 'embed.html', icon: '\u{1F9EE}', name: 'Embeddings', desc: 'Compute text embeddings and measure semantic similarity between passages.', tag: 'Vectors' },
+        ]},
+        { cat: 'Research', catId: 'research', icon: '\u{1F9E0}', items: [
+            { href: 'prompt.html', icon: '\u{1F4AC}', name: 'Playground', desc: 'Chat with Gemini using custom system instructions and model parameters.', tag: 'Chat' },
             { href: 'search.html', icon: '\u{1F310}', name: 'Search', desc: 'Grounded search with Google. Get real-time, cited answers.', tag: 'Grounding' },
             { href: 'pdf.html', icon: '\u{1F4C4}', name: 'PDF Analyzer', desc: 'Upload PDFs and query their content with AI-powered analysis.', tag: 'Documents' },
             { href: 'url.html', icon: '\u{1F517}', name: 'URL Context', desc: 'Summarize and analyze web pages by providing a URL.', tag: 'Web' },
             { href: 'files.html', icon: '\u{1F4C2}', name: 'File Search', desc: 'Upload documents and search across them with natural language.', tag: 'Documents' },
-        ]},
-        { cat: 'AI Tools', catId: 'ai', icon: '\u2699\uFE0F', items: [
-            { href: 'think.html', icon: '\u{1F9E0}', name: 'Thinking', desc: 'See the model\'s step-by-step reasoning process for complex problems.', tag: 'Reasoning' },
-            { href: 'code.html', icon: '\u{1F4BB}', name: 'Code Runner', desc: 'Generate and execute Python code with automatic error correction.', tag: 'Execution' },
-            { href: 'maps.html', icon: '\u{1F5FA}\uFE0F', name: 'Maps', desc: 'Location-aware queries with Google Maps integration and visualization.', tag: 'Grounding' },
             { href: 'research.html', icon: '\u{1F50E}', name: 'Deep Research', desc: 'Multi-step research agent that synthesizes information across sources.', tag: 'Agent' },
         ]},
-        { cat: 'Creative', catId: 'creative', icon: '\u{1F3A8}', items: [
-            { href: 'tts.html', icon: '\u{1F399}\uFE0F', name: 'Text to Speech', desc: 'Generate natural-sounding speech from text with multiple voice options.', tag: 'Audio' },
-            { href: 'story.html', icon: '\u{1F4D6}', name: 'Story Illustrator', desc: 'Generate illustrated storybooks with consistent characters and scenes.', tag: 'Images' },
-            { href: 'animate.html', icon: '\u{1F3AC}', name: 'Animated Video', desc: 'Create AI-generated story videos with narration and animation.', tag: 'Video' },
+        { cat: 'Multimodal', catId: 'multimodal', icon: '\u{1F441}', items: [
+            { href: 'describe.html', icon: '\u{1F5BC}', name: 'Image Describer', desc: 'Upload any image and get detailed AI-generated descriptions and analysis.', tag: 'Vision' },
+            { href: 'detect.html', icon: '\u{1F3AF}', name: 'Object Detector', desc: 'Detect and locate objects in images with labeled bounding boxes.', tag: 'Vision' },
+            { href: 'video.html', icon: '\u{1F3AC}', name: 'Video Analyzer', desc: 'Upload videos and ask questions about their content, scenes, and details.', tag: 'Vision' },
+        ]},
+        { cat: 'Model Metadata', catId: 'explore', icon: '\u{1F4CA}', items: [
+            { href: 'index.html', icon: '\u{1F522}', name: 'Token Counter', desc: 'Count tokens for text, images, and files. Estimate costs across all Gemini models.', tag: 'Core' },
+            { href: 'models.html', icon: '\u{1F916}', name: 'Model Explorer', desc: 'Browse all available Gemini models with specs, pricing, and capability details.', tag: 'Reference' },
         ]},
     ];
 
@@ -438,6 +519,13 @@
             var a = document.createElement('a');
             a.className = 'card';
             a.href = item.href;
+
+            // Track mouse position for glow effect
+            a.addEventListener('mousemove', function(e) {
+                var rect = a.getBoundingClientRect();
+                a.style.setProperty('--mouse-x', (e.clientX - rect.left) + 'px');
+                a.style.setProperty('--mouse-y', (e.clientY - rect.top) + 'px');
+            });
 
             var top = document.createElement('div');
             top.className = 'card-top';
