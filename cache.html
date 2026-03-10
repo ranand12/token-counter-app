@@ -144,15 +144,19 @@
             border-radius: 8px; padding: 14px; transition: border-color 0.2s;
         }
         .cache-item:hover { border-color: var(--accent); }
-        .cache-item-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
-        .cache-item-name { font-weight: 600; font-size: 14px; word-break: break-all; }
+        .cache-item-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+        .cache-item-name {
+            font-weight: 600; font-size: 14px;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0;
+        }
         .cache-item-actions { display: flex; gap: 6px; flex-shrink: 0; }
         .cache-item-meta {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 6px; font-size: 12px; color: var(--text-muted);
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 6px 16px; font-size: 12px; color: var(--text-muted);
         }
-        .cache-meta-item { display: flex; align-items: center; gap: 4px; }
-        .cache-meta-item strong { color: var(--text-secondary); font-weight: 600; }
+        .cache-meta-item { display: flex; align-items: baseline; gap: 4px; overflow: hidden; }
+        .cache-meta-item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .cache-meta-item strong { color: var(--text-secondary); font-weight: 600; flex-shrink: 0; }
 
         .empty-state {
             text-align: center; padding: 32px; color: var(--text-muted); font-size: 14px;
@@ -1048,14 +1052,16 @@ But it was still burning.
 
         // --- DOM helper to build a cache meta span ---
         function createMetaItem(labelText, valueText, color) {
-            const span = document.createElement('span');
-            span.className = 'cache-meta-item';
-            if (color) span.style.color = color;
+            const div = document.createElement('div');
+            div.className = 'cache-meta-item';
+            if (color) div.style.color = color;
             const strong = document.createElement('strong');
             strong.textContent = labelText;
-            span.appendChild(strong);
-            span.appendChild(document.createTextNode(' ' + valueText));
-            return span;
+            div.appendChild(strong);
+            const val = document.createElement('span');
+            val.textContent = valueText;
+            div.appendChild(val);
+            return div;
         }
 
         // --- Create Cache ---
