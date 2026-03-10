@@ -154,7 +154,7 @@
         .result.visible { display: block; }
         .result-inner { background: var(--accent-soft); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
         .result-label { font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 12px; }
-        .result-text { font-size: 14px; color: var(--text); line-height: 1.7; white-space: pre-wrap; }
+        .result-text { font-size: 14px; color: var(--text); line-height: 1.7; }
         .result-text p { margin-bottom: 10px; }
 
         .error { margin-top: 14px; padding: 10px 14px; background: var(--red-soft); border: 1px solid var(--red); border-radius: 8px; font-size: 13px; color: var(--red); display: none; }
@@ -365,12 +365,7 @@
                 if (data.error) throw new Error(data.error.message || 'API error');
 
                 const text = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No description returned.';
-                document.getElementById('result-text').innerHTML = text
-                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                    .replace(/\n\n/g, '</p><p>')
-                    .replace(/\n- /g, '<br>&bull; ')
-                    .replace(/\n\* /g, '<br>&bull; ')
-                    .replace(/^/, '<p>').replace(/$/, '</p>');
+                renderMarkdown(text, document.getElementById('result-text'));
                 result.classList.add('visible');
             } catch (err) {
                 error.textContent = err.message;
@@ -386,6 +381,7 @@
         });
 
     </script>
+    <script src="markdown.js"></script>
     <script src="nav.js"></script>
 </body>
 </html>

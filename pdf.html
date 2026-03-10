@@ -83,7 +83,7 @@
         .result.visible { display: block; }
         .result-inner { background: var(--accent-soft); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
         .result-label { font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 12px; }
-        .result-text { font-size: 14px; color: var(--text); line-height: 1.7; white-space: pre-wrap; }
+        .result-text { font-size: 14px; color: var(--text); line-height: 1.7; }
         .error { margin-top: 14px; padding: 10px 14px; background: var(--red-soft); border: 1px solid var(--red); border-radius: 8px; font-size: 13px; color: var(--red); display: none; }
         .error.visible { display: block; }
         .footer { margin-top: 24px; }
@@ -255,7 +255,7 @@
                 if (data.error) throw new Error(data.error.message || 'API error');
 
                 var text = data.candidates?.[0]?.content?.parts?.[0]?.text || 'No answer returned.';
-                document.getElementById('result-text').textContent = text;
+                renderMarkdown(text, document.getElementById('result-text'));
                 result.classList.add('visible');
             } catch (err) {
                 error.textContent = err.message;
@@ -268,6 +268,7 @@
 
         document.getElementById('question-input').addEventListener('keydown', function(e) { if (e.key === 'Enter') askPdf(); });
     </script>
+    <script src="markdown.js"></script>
     <script src="nav.js"></script>
 </body>
 </html>

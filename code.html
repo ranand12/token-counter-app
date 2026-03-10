@@ -277,7 +277,7 @@
 
                     // Handle explanation text
                     if (part.text) {
-                        document.getElementById('explanation-text').textContent = part.text;
+                        renderMarkdown(part.text, document.getElementById('explanation-text'));
                         document.getElementById('explanation-section').style.display = 'block';
                         hasContent = true;
                     }
@@ -321,6 +321,7 @@
         });
 
     </script>
+    <script src="markdown.js"></script>
     <script src="nav.js"></script>
 </body>
 </html>

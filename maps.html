@@ -110,7 +110,7 @@
         .result-label { font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 12px; }
         .result-inner {
             background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius);
-            padding: 20px; white-space: pre-wrap; word-wrap: break-word; line-height: 1.6; font-size: 14px;
+            padding: 20px; word-wrap: break-word; line-height: 1.6; font-size: 14px;
         }
 
         .error { margin-top: 14px; padding: 10px 14px; background: var(--red-soft); border: 1px solid var(--red); border-radius: 8px; font-size: 13px; color: var(--red); display: none; }
@@ -350,7 +350,7 @@
                     throw new Error('No response text received');
                 }
 
-                resultText.textContent = text;
+                renderMarkdown(text, resultText);
                 result.classList.add('visible');
 
             } catch (err) {
@@ -367,6 +367,7 @@
         });
 
     </script>
+    <script src="markdown.js"></script>
     <script src="nav.js"></script>
 </body>
 </html>

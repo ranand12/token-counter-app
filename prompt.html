@@ -88,7 +88,7 @@
         .result-label { font-size: 13px; font-weight: 600; color: var(--accent); }
         .result-meta { font-size: 11px; color: var(--text-muted); }
         .result-inner { background: var(--accent-soft); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
-        .result-text { font-size: 14px; color: var(--text); line-height: 1.7; white-space: pre-wrap; }
+        .result-text { font-size: 14px; color: var(--text); line-height: 1.7; }
         .error { margin-top: 14px; padding: 10px 14px; background: var(--red-soft); border: 1px solid var(--red); border-radius: 8px; font-size: 13px; color: var(--red); display: none; }
         .error.visible { display: block; }
         .footer { margin-top: 24px; }
@@ -209,6 +209,7 @@
         </div>
     </div>
 
+    <script src="markdown.js"></script>
     <script>
         const API_BASE = 'https://generativelanguage.googleapis.com/v1beta';
 
@@ -298,6 +299,7 @@
                             }
                         }
                     }
+                    renderMarkdown(fullText, textEl);
 
                     const elapsed = ((performance.now() - startTime) / 1000).toFixed(1);
                     document.getElementById('result-meta').textContent = `${elapsed}s`;
@@ -312,7 +314,7 @@
                     const tokens = data.usageMetadata;
                     const meta = tokens ? `${elapsed}s | ${tokens.promptTokenCount} in / ${tokens.candidatesTokenCount} out` : `${elapsed}s`;
 
-                    document.getElementById('result-text').textContent = text;
+                    renderMarkdown(text, document.getElementById('result-text'));
                     document.getElementById('result-meta').textContent = meta;
                     result.classList.add('visible');
                 }

@@ -61,9 +61,12 @@
     }
     topbar.appendChild(hamburger);
 
-    var brand = document.createElement('span');
+    var brand = document.createElement('a');
     brand.className = 'gt-topbar-brand';
     brand.textContent = 'Gemini Tools';
+    brand.href = 'index.html';
+    brand.style.textDecoration = 'none';
+    brand.style.color = 'inherit';
     topbar.appendChild(brand);
 
     if (currentPageName) {
@@ -145,9 +148,12 @@
     var sidebarHeader = document.createElement('div');
     sidebarHeader.className = 'gt-sidebar-header';
 
-    var sidebarBrand = document.createElement('span');
+    var sidebarBrand = document.createElement('a');
     sidebarBrand.className = 'gt-sidebar-brand';
     sidebarBrand.textContent = 'Gemini Tools';
+    sidebarBrand.href = 'index.html';
+    sidebarBrand.style.textDecoration = 'none';
+    sidebarBrand.style.color = 'inherit';
     sidebarHeader.appendChild(sidebarBrand);
 
     var closeBtn = document.createElement('button');

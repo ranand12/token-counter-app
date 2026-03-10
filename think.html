@@ -272,7 +272,6 @@
             font-style: italic;
             color: var(--text-secondary);
             line-height: 1.7;
-            white-space: pre-wrap;
             margin-top: 12px;
         }
 
@@ -294,7 +293,6 @@
         .answer-text {
             color: var(--text);
             line-height: 1.7;
-            white-space: pre-wrap;
         }
 
         .token-info {
@@ -546,8 +544,8 @@
                 }
 
                 // Display results
-                document.getElementById('thoughtText').textContent = thoughtText || 'No thoughts captured (budget might be 0 or model did not use thinking tokens).';
-                document.getElementById('answerText').textContent = answerText || 'No answer generated.';
+                renderMarkdown(thoughtText || 'No thoughts captured (budget might be 0 or model did not use thinking tokens).', document.getElementById('thoughtText'));
+                renderMarkdown(answerText || 'No answer generated.', document.getElementById('answerText'));
 
                 // Token info
                 const usage = data.usageMetadata;
@@ -589,6 +587,7 @@
         // Initialize theme on load
         initTheme();
     </script>
+    <script src="markdown.js"></script>
     <script src="nav.js"></script>
 </body>
 </html>
