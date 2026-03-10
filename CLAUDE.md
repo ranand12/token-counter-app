@@ -30,3 +30,6 @@ research.html (Deep Research), files.html (File Search)
 ## UX Principle
 - Pre-populate everything, use toggles/presets, minimize user input
 - Users should see capabilities without having to think or configure
+
+## Workflow
+- Always push changes to GitHub after committing

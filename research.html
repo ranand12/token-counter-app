@@ -489,12 +489,9 @@ limitations under the License.
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        interactionConfig: {
-                            responseModality: "RESPONSE_MODALITY_TEXT"
-                        },
-                        userInput: {
-                            parts: [{ text: topic }]
-                        }
+                        input: topic,
+                        agent: 'deep-research-pro-preview-12-2025',
+                        background: true
                     })
                 });
 
@@ -504,13 +501,12 @@ limitations under the License.
                     throw new Error(interaction.error.message || 'Failed to create research interaction');
                 }
 
-                if (!interaction.name) {
-                    throw new Error('No interaction name returned from API');
+                if (!interaction.id) {
+                    throw new Error('No interaction ID returned from API');
                 }
 
                 // Start polling
-                const interactionName = interaction.name;
-                pollForResults(interactionName, apiKey);
+                pollForResults(interaction.id, apiKey);
 
             } catch (error) {
                 clearTimers();
@@ -521,23 +517,23 @@ limitations under the License.
         }
 
         // Poll for research completion
-        function pollForResults(name, apiKey) {
+        function pollForResults(interactionId, apiKey) {
             let pollCount = 0;
-            const maxPolls = 120; // 10 minutes max (120 * 5 seconds)
+            const maxPolls = 120; // 10 minutes max (120 * 10 seconds)
 
             pollTimer = setInterval(async () => {
                 pollCount++;
 
                 if (pollCount > maxPolls) {
                     clearTimers();
-                    showError('Research timed out after 10 minutes. Please try again.');
+                    showError('Research timed out after 20 minutes. Please try again.');
                     document.getElementById('startBtn').disabled = false;
                     document.getElementById('progressSection').style.display = 'none';
                     return;
                 }
 
                 try {
-                    const pollUrl = API_BASE + '/' + name + '?key=' + encodeURIComponent(apiKey);
+                    const pollUrl = API_BASE + '/interactions/' + encodeURIComponent(interactionId) + '?key=' + encodeURIComponent(apiKey);
                     const resp = await fetch(pollUrl);
                     const data = await resp.json();
 
@@ -545,26 +541,20 @@ limitations under the License.
                         throw new Error(data.error.message || 'Polling error');
                     }
 
-                    // Check if done
-                    if (data.done === true || data.state === 'DONE' || data.state === 'COMPLETE') {
+                    // Update status display
+                    if (data.status) {
+                        document.querySelector('.progress-status').textContent =
+                            'Status: ' + data.status + ' — The agent is searching the web and analyzing sources.';
+                    }
+
+                    // Check if completed
+                    if (data.status === 'completed') {
                         clearTimers();
 
-                        // Extract result text
+                        // Extract result text from outputs array
                         let resultText = null;
-
-                        // Try multiple possible paths
-                        if (data.response?.candidates?.[0]?.content?.parts?.[0]?.text) {
-                            resultText = data.response.candidates[0].content.parts[0].text;
-                        } else if (data.result?.response?.candidates?.[0]?.content?.parts?.[0]?.text) {
-                            resultText = data.result.response.candidates[0].content.parts[0].text;
-                        } else if (data.candidates?.[0]?.content?.parts?.[0]?.text) {
-                            resultText = data.candidates[0].content.parts[0].text;
-                        } else if (data.content?.parts?.[0]?.text) {
-                            resultText = data.content.parts[0].text;
-                        } else if (data.text) {
-                            resultText = data.text;
-                        } else if (data.result?.text) {
-                            resultText = data.result.text;
+                        if (data.outputs && data.outputs.length > 0) {
+                            resultText = data.outputs[data.outputs.length - 1].text;
                         }
 
                         if (resultText) {
@@ -575,10 +565,10 @@ limitations under the License.
 
                         document.getElementById('startBtn').disabled = false;
                         document.getElementById('progressSection').style.display = 'none';
-                    } else if (data.state === 'FAILED' || data.state === 'ERROR') {
-                        throw new Error(data.error?.message || 'Research failed');
+                    } else if (data.status === 'failed' || data.status === 'cancelled') {
+                        throw new Error('Research ' + data.status + '. Please try again.');
                     }
-                    // Otherwise, keep polling
+                    // Otherwise, keep polling (status is 'processing')
 
                 } catch (error) {
                     clearTimers();
@@ -586,7 +576,7 @@ limitations under the License.
                     document.getElementById('startBtn').disabled = false;
                     document.getElementById('progressSection').style.display = 'none';
                 }
-            }, 5000); // Poll every 5 seconds
+            }, 10000); // Poll every 10 seconds (research takes minutes)
         }
 
         // Update elapsed time display

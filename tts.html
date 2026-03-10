@@ -381,6 +381,38 @@
             document.getElementById('text').value = text;
         }
 
+        // Wrap raw PCM data in a WAV container so browsers can play it
+        function createWavFromPcm(pcmData, sampleRate, numChannels, bitsPerSample) {
+            const byteRate = sampleRate * numChannels * (bitsPerSample / 8);
+            const blockAlign = numChannels * (bitsPerSample / 8);
+            const dataSize = pcmData.length;
+            const buffer = new ArrayBuffer(44 + dataSize);
+            const view = new DataView(buffer);
+
+            function writeString(offset, str) {
+                for (let i = 0; i < str.length; i++) {
+                    view.setUint8(offset + i, str.charCodeAt(i));
+                }
+            }
+
+            writeString(0, 'RIFF');
+            view.setUint32(4, 36 + dataSize, true);
+            writeString(8, 'WAVE');
+            writeString(12, 'fmt ');
+            view.setUint32(16, 16, true);            // subchunk1 size
+            view.setUint16(20, 1, true);             // PCM format
+            view.setUint16(22, numChannels, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, byteRate, true);
+            view.setUint16(32, blockAlign, true);
+            view.setUint16(34, bitsPerSample, true);
+            writeString(36, 'data');
+            view.setUint32(40, dataSize, true);
+
+            new Uint8Array(buffer, 44).set(pcmData);
+            return buffer;
+        }
+
         async function generateSpeech() {
             const apiKey = document.getElementById('apiKey').value.trim();
             const model = document.getElementById('model').value.trim();
@@ -452,16 +484,20 @@
 
                 const audioData = data.candidates[0].content.parts[0].inlineData;
                 const audioBytes = atob(audioData.data);
-                const byteArray = new Uint8Array(audioBytes.length);
+                const pcmData = new Uint8Array(audioBytes.length);
                 for (let i = 0; i < audioBytes.length; i++) {
-                    byteArray[i] = audioBytes.charCodeAt(i);
+                    pcmData[i] = audioBytes.charCodeAt(i);
                 }
-                const blob = new Blob([byteArray], { type: audioData.mimeType });
+
+                // The API returns raw PCM (24kHz, mono, 16-bit) — wrap in WAV header
+                const wavBuffer = createWavFromPcm(pcmData, 24000, 1, 16);
+                const blob = new Blob([wavBuffer], { type: 'audio/wav' });
                 const audioUrl = URL.createObjectURL(blob);
 
                 const audioPlayer = document.getElementById('audioPlayer');
                 audioPlayer.src = audioUrl;
                 audioResult.style.display = 'block';
+                audioPlayer.play().catch(function() {});
 
                 const downloadBtn = document.getElementById('downloadBtn');
                 downloadBtn.onclick = function() {
@@ -487,8 +523,15 @@
             }
         });
 
-        window.addEventListener('beforeunload', function() {
-            document.getElementById('apiKey').value = '';
+        // Load saved API key
+        (function() {
+            const saved = localStorage.getItem('gemini_api_key');
+            if (saved) document.getElementById('apiKey').value = saved;
+        })();
+
+        // Save API key on use
+        document.getElementById('apiKey').addEventListener('change', function() {
+            if (this.value.trim()) localStorage.setItem('gemini_api_key', this.value.trim());
         });
     </script>
 
