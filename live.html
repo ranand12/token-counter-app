@@ -457,8 +457,7 @@
         let micProcessor = null;
         let micSource = null;
         let playbackCtx = null;
-        let playbackQueue = [];
-        let isPlaying = false;
+        let nextPlayTime = 0;
         let connected = false;
         let micActive = false;
         let currentModelMsg = null;
@@ -829,7 +828,7 @@
             return btoa(binary);
         }
 
-        // --- Audio Playback ---
+        // --- Audio Playback (gapless scheduling) ---
         function queueAudioPlayback(base64Data) {
             var raw = atob(base64Data);
             var bytes = new Uint8Array(raw.length);
@@ -844,45 +843,37 @@
                 float32[j] = int16[j] / 32768;
             }
 
-            playbackQueue.push(float32);
-            if (!isPlaying) {
-                playNextChunk();
-            }
-        }
-
-        function playNextChunk() {
-            if (playbackQueue.length === 0) {
-                isPlaying = false;
-                return;
-            }
-            isPlaying = true;
-
             if (!playbackCtx) {
                 playbackCtx = new (window.AudioContext || window.webkitAudioContext)({
                     sampleRate: OUTPUT_SAMPLE_RATE
                 });
+                nextPlayTime = playbackCtx.currentTime;
             }
 
-            var float32 = playbackQueue.shift();
+            // Resume if suspended (browser autoplay policy)
+            if (playbackCtx.state === 'suspended') {
+                playbackCtx.resume();
+            }
+
             var buffer = playbackCtx.createBuffer(1, float32.length, OUTPUT_SAMPLE_RATE);
             buffer.copyToChannel(float32, 0);
 
             var source = playbackCtx.createBufferSource();
             source.buffer = buffer;
             source.connect(playbackCtx.destination);
-            source.onended = function() {
-                playNextChunk();
-            };
-            source.start();
+
+            // Schedule seamlessly: if we've fallen behind, start now
+            var startTime = Math.max(nextPlayTime, playbackCtx.currentTime);
+            source.start(startTime);
+            nextPlayTime = startTime + buffer.duration;
         }
 
         function clearPlaybackQueue() {
-            playbackQueue = [];
-            isPlaying = false;
             if (playbackCtx) {
                 playbackCtx.close().catch(function(){});
                 playbackCtx = null;
             }
+            nextPlayTime = 0;
         }
     </script>
 
