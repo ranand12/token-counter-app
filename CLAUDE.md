@@ -16,14 +16,14 @@
 
 ## Current Tools
 index.html (Tokens), models.html, describe.html, embed.html, extract.html,
-prompt.html (Playground), search.html, detect.html, pdf.html, video.html,
+prompt.html (Playground), search.html, detect.html (3D Spatial), pdf.html, video.html,
 animate.html, story.html, tts.html (Text-to-Speech), think.html (Thinking),
 code.html (Code Runner), url.html (URL Context), maps.html (Maps),
 research.html (Deep Research), files.html (File Search)
 
 ## Nav Structure (nav.js)
 - Analyze: Token Counter, Model Explorer
-- Vision: Image Describer, Object Detector, Video Analyzer
+- Vision: Image Describer, 3D Spatial, Video Analyzer
 - Text & Data: Playground, Extractor, Embeddings, Search, PDF, URL Context, File Search
 - AI Tools: Thinking, Code Runner, Maps, Deep Research
 - Creative: Text to Speech, Story Illustrator, Animated Video

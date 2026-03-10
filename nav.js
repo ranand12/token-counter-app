@@ -14,7 +14,7 @@
         ]},
         { title: 'Vision', links: [
             ['describe.html', 'Image Describer', 'Describe images with AI'],
-            ['detect.html', 'Object Detector', 'Detect objects with bounding boxes'],
+            ['detect.html', '3D Spatial', 'Points and 3D bounding boxes'],
             ['video.html', 'Video Analyzer', 'Analyze video content'],
         ]},
         { title: 'Text & Data', links: [
