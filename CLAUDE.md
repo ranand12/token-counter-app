@@ -32,5 +32,6 @@ research.html (Deep Research), files.html (File Search)
 - Pre-populate everything, use toggles/presets, minimize user input
 - Users should see capabilities without having to think or configure
 
-## Workflow
-- Always push changes to GitHub after committing
+## Workflow (MANDATORY)
+- **ALWAYS commit AND push changes to GitHub** — every commit must be followed by `git push`. No exceptions.
+- Never leave committed changes unpushed. The task is not done until changes are on the remote.
