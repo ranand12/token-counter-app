@@ -252,9 +252,6 @@
     sidebarSearchInput.placeholder = 'Search tools...';
     sidebarSearch.appendChild(sidebarSearchInput);
 
-    // Insert search after header, before content
-    sidebar.insertBefore(sidebarSearch, content);
-
     sidebarSearchInput.addEventListener('input', function() {
         var q = this.value.toLowerCase().trim();
         var sectionEls = content.querySelectorAll('.gt-sidebar-section');
@@ -278,6 +275,8 @@
         });
     });
 
+    // Append search then content (search appears between header and links)
+    sidebar.appendChild(sidebarSearch);
     sidebar.appendChild(content);
 
     // --- Build Command Palette (Ctrl+K) ---
