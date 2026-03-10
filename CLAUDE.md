@@ -15,11 +15,11 @@
 - Design: minimal, card-based layout with var(--accent) indigo theme
 
 ## Current Tools
-index.html (Tokens), models.html, describe.html, embed.html, extract.html,
-prompt.html (Playground), search.html, detect.html (3D Spatial), pdf.html, video.html,
-animate.html, story.html, tts.html (Text-to-Speech), think.html (Thinking),
-code.html (Code Runner), url.html (URL Context), maps.html (Maps),
-research.html (Deep Research), files.html (File Search)
+index.html (Home), tokens.html (Token Counter), models.html, describe.html, embed.html,
+extract.html, prompt.html (Playground), search.html, detect.html (3D Spatial),
+pdf.html, video.html, animate.html, story.html, tts.html (Text-to-Speech),
+think.html (Thinking), code.html (Code Runner), url.html (URL Context),
+maps.html (Maps), research.html (Deep Research), files.html (File Search)
 
 ## Nav Structure (nav.js)
 - Analyze: Token Counter, Model Explorer

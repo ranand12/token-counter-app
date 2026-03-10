@@ -4,33 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src https://generativelanguage.googleapis.com;">
-    <title>Gemini Token Counter</title>
-    <!--
-    Copyright 2026 Google LLC.
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        https://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
-    -->
+    <title>Gemini Tools</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="nav.css">
     <style>
         :root {
-            --bg: #ffffff;
-            --bg-elevated: #f5f6f8;
+            --bg: #f8f9fc;
+            --bg-elevated: #ffffff;
             --bg-card: #ffffff;
-            --bg-input: #f5f6f8;
-            --border: #e2e4e9;
+            --bg-card-hover: #ffffff;
+            --border: #e4e7ee;
             --border-focus: #4f46e5;
             --text: #111318;
             --text-secondary: #4b5060;
@@ -46,18 +31,19 @@
             --amber-soft: #fffbeb;
             --purple: #7c3aed;
             --purple-soft: #f5f3ff;
-            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
-            --shadow-lg: 0 8px 24px rgba(0,0,0,0.1);
-            --radius: 12px;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.06);
+            --shadow-lg: 0 12px 40px rgba(0,0,0,0.1);
+            --radius: 16px;
+            --dot-color: #d8dbe4;
         }
 
         [data-theme="dark"] {
-            --bg: #0e1117;
-            --bg-elevated: #161b26;
-            --bg-card: #1c2132;
-            --bg-input: #161b26;
-            --border: #2a3045;
+            --bg: #0b0e14;
+            --bg-elevated: #141824;
+            --bg-card: #161b2a;
+            --bg-card-hover: #1c2236;
+            --border: #232a3e;
             --border-focus: #818cf8;
             --text: #eceef4;
             --text-secondary: #9399ae;
@@ -74,457 +60,512 @@
             --purple: #a78bfa;
             --purple-soft: #7c3aed20;
             --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
-            --shadow-md: 0 4px 12px rgba(0,0,0,0.3);
-            --shadow-lg: 0 8px 24px rgba(0,0,0,0.4);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.25);
+            --shadow-lg: 0 12px 40px rgba(0,0,0,0.35);
+            --dot-color: #1e2438;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'DM Sans', sans-serif;
             background: var(--bg);
             color: var(--text);
             min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 24px;
             transition: background 0.3s, color 0.3s;
+            position: relative;
         }
 
-        .container {
-            max-width: 600px;
-            width: 100%;
+        /* Dot grid background */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: radial-gradient(var(--dot-color) 1px, transparent 1px);
+            background-size: 24px 24px;
+            pointer-events: none;
+            z-index: 0;
         }
 
-        /* Nav */
-        .nav {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 36px;
+        /* Gradient orb behind hero */
+        body::after {
+            content: '';
+            position: fixed;
+            top: -120px;
+            right: -80px;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, var(--accent) 0%, transparent 70%);
+            opacity: 0.05;
+            pointer-events: none;
+            z-index: 0;
         }
 
-        .nav-brand {
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-muted);
-            letter-spacing: 0.03em;
+        .hero {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 32px 20px;
         }
 
-        .nav-right {
-            display: flex;
+        .hero-label {
+            font-family: 'Space Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--accent);
+            margin-bottom: 16px;
+            opacity: 0;
+            animation: fadeUp 0.6s ease forwards;
+        }
+
+        .hero h1 {
+            font-size: clamp(36px, 5vw, 56px);
+            font-weight: 700;
+            letter-spacing: -0.035em;
+            line-height: 1.1;
+            color: var(--text);
+            margin-bottom: 12px;
+            opacity: 0;
+            animation: fadeUp 0.6s ease 0.1s forwards;
+        }
+
+        .hero h1 span {
+            background: linear-gradient(135deg, var(--accent), var(--purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 17px;
+            color: var(--text-secondary);
+            max-width: 520px;
+            line-height: 1.6;
+            opacity: 0;
+            animation: fadeUp 0.6s ease 0.2s forwards;
+        }
+
+        .tool-count {
+            display: inline-flex;
             align-items: center;
             gap: 8px;
-        }
-
-        .nav-link {
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text-secondary);
-            text-decoration: none;
+            margin-top: 20px;
             padding: 6px 14px;
-            border-radius: 8px;
-            transition: all 0.2s;
-        }
-
-        .nav-link:hover {
             background: var(--bg-elevated);
-            color: var(--text);
-        }
-
-        .theme-toggle {
-            width: 36px;
-            height: 36px;
             border: 1px solid var(--border);
+            border-radius: 100px;
+            font-family: 'Space Mono', monospace;
+            font-size: 12px;
+            color: var(--text-muted);
+            opacity: 0;
+            animation: fadeUp 0.6s ease 0.3s forwards;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tool-count strong {
+            color: var(--accent);
+            font-size: 14px;
+        }
+
+        /* Sections */
+        .sections {
+            position: relative;
+            z-index: 1;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px 32px 80px;
+        }
+
+        .section {
+            margin-bottom: 48px;
+            opacity: 0;
+            animation: fadeUp 0.5s ease forwards;
+        }
+
+        .section:nth-child(1) { animation-delay: 0.35s; }
+        .section:nth-child(2) { animation-delay: 0.45s; }
+        .section:nth-child(3) { animation-delay: 0.55s; }
+        .section:nth-child(4) { animation-delay: 0.65s; }
+        .section:nth-child(5) { animation-delay: 0.75s; }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .section-icon {
+            width: 32px;
+            height: 32px;
             border-radius: 8px;
-            background: var(--bg-elevated);
-            color: var(--text-secondary);
-            cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s;
-            padding: 0;
+            font-size: 16px;
+            flex-shrink: 0;
         }
 
-        .theme-toggle:hover {
-            border-color: var(--accent);
-            color: var(--accent);
-            background: var(--accent-soft);
-            transform: none;
-            box-shadow: none;
-        }
-
-        .theme-toggle svg { width: 18px; height: 18px; }
-        .icon-sun, [data-theme="dark"] .icon-moon { display: none; }
-        [data-theme="dark"] .icon-sun { display: block; }
-
-        /* Header */
-        .header {
-            margin-bottom: 32px;
-        }
-
-        h1 {
-            font-size: 36px;
+        .section-title {
+            font-size: 13px;
             font-weight: 700;
-            letter-spacing: -0.02em;
-            line-height: 1.15;
-            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
         }
 
-        .subtitle {
-            font-size: 15px;
-            color: var(--text-secondary);
-            line-height: 1.5;
+        .section-line {
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+            margin-left: 8px;
         }
 
-        /* Card */
+        /* Cards Grid */
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+        }
+
         .card {
+            position: relative;
             background: var(--bg-card);
             border: 1px solid var(--border);
             border-radius: var(--radius);
-            padding: 28px;
+            padding: 24px;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            cursor: pointer;
             box-shadow: var(--shadow-sm);
-            transition: background 0.3s, border-color 0.3s;
         }
 
-        .field { margin-bottom: 18px; }
-
-        .field-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-bottom: 18px;
+        /* Colored left accent bar */
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 12px;
+            left: 0;
+            bottom: 12px;
+            width: 3px;
+            border-radius: 0 3px 3px 0;
+            background: var(--card-accent, var(--accent));
+            opacity: 0;
+            transform: scaleY(0);
+            transition: opacity 0.3s ease, transform 0.3s ease;
         }
 
-        label {
-            display: block;
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text-secondary);
-            margin-bottom: 6px;
+        /* Glow effect behind card on hover */
+        .card::after {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: var(--radius);
+            background: radial-gradient(
+                600px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+                var(--card-glow, rgba(79, 70, 229, 0.06)),
+                transparent 40%
+            );
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+            z-index: 0;
         }
 
-        input[type="password"],
-        input[type="text"] {
-            width: 100%;
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 10px 14px;
-            font-family: inherit;
-            font-size: 14px;
-            color: var(--text);
-            outline: none;
-            transition: all 0.2s;
+        .card > * {
+            position: relative;
+            z-index: 1;
         }
 
-        input:focus {
-            border-color: var(--border-focus);
-            box-shadow: 0 0 0 3px var(--accent-soft);
+        .card:hover {
+            border-color: color-mix(in srgb, var(--card-accent, var(--accent)) 40%, var(--border));
+            box-shadow: var(--shadow-lg), 0 0 0 1px color-mix(in srgb, var(--card-accent, var(--accent)) 10%, transparent);
+            transform: translateY(-3px);
+            background: var(--bg-card-hover);
         }
 
-        input::placeholder { color: var(--text-muted); }
-
-        textarea {
-            width: 100%;
-            height: 160px;
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 12px 14px;
-            font-family: inherit;
-            font-size: 14px;
-            line-height: 1.6;
-            color: var(--text);
-            resize: vertical;
-            outline: none;
-            transition: all 0.2s;
+        .card:hover::before {
+            opacity: 1;
+            transform: scaleY(1);
         }
 
-        textarea:focus {
-            border-color: var(--border-focus);
-            box-shadow: 0 0 0 3px var(--accent-soft);
+        .card:hover::after {
+            opacity: 1;
         }
 
-        textarea::placeholder { color: var(--text-muted); }
+        .card-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
 
-        .actions {
+        .card-emoji {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
             display: flex;
             align-items: center;
-            gap: 14px;
-            margin-top: 18px;
+            justify-content: center;
+            font-size: 24px;
+            background: var(--card-bg, var(--accent-soft));
+            flex-shrink: 0;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 2px 8px color-mix(in srgb, var(--card-accent, var(--accent)) 12%, transparent);
         }
 
-        button {
-            background: var(--accent);
-            color: #fff;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 24px;
-            font-family: inherit;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s;
+        .card:hover .card-emoji {
+            transform: scale(1.08) rotate(-3deg);
+            box-shadow: 0 4px 14px color-mix(in srgb, var(--card-accent, var(--accent)) 20%, transparent);
         }
 
-        button:hover {
-            background: var(--accent-hover);
-        }
-
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .shortcut-hint {
-            font-size: 12px;
-            color: var(--text-muted);
-        }
-
-        .shortcut-hint kbd {
+        .card-arrow {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             background: var(--bg-elevated);
             border: 1px solid var(--border);
-            border-radius: 4px;
-            padding: 2px 5px;
-            font-family: inherit;
-            font-size: 11px;
-        }
-
-        /* Result */
-        .result {
-            margin-top: 24px;
-            display: none;
-        }
-
-        .result.visible { display: block; }
-
-        .result-inner {
-            background: var(--accent-soft);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 28px;
-            text-align: center;
-        }
-
-        .token-count {
-            font-size: 56px;
-            font-weight: 700;
-            color: var(--accent);
-            line-height: 1;
-            letter-spacing: -0.03em;
-        }
-
-        .token-label {
-            font-size: 13px;
-            font-weight: 500;
-            color: var(--text-secondary);
-            margin-top: 6px;
-        }
-
-        /* Error */
-        .error {
-            margin-top: 14px;
-            padding: 10px 14px;
-            background: var(--red-soft);
-            border: 1px solid var(--red);
-            border-radius: 8px;
-            font-size: 13px;
-            color: var(--red);
-            display: none;
-        }
-
-        .error.visible { display: block; }
-
-        /* Footer */
-        .footer {
-            margin-top: 24px;
-        }
-
-        .info {
-            font-size: 13px;
             color: var(--text-muted);
-            text-align: center;
+            font-size: 14px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0;
+            transform: translateX(-6px);
         }
 
-        .privacy-notice {
-            margin-top: 16px;
-            padding: 12px 14px;
-            background: var(--green-soft);
-            border-radius: 8px;
-            font-size: 12px;
-            color: var(--green);
-            line-height: 1.5;
-            display: flex;
-            gap: 8px;
-            align-items: flex-start;
+        .card:hover .card-arrow {
+            opacity: 1;
+            transform: translateX(0);
+            background: var(--card-accent, var(--accent));
+            border-color: var(--card-accent, var(--accent));
+            color: #fff;
         }
 
-        .privacy-notice svg {
-            flex-shrink: 0;
-            width: 14px;
-            height: 14px;
-            margin-top: 2px;
+        .card-name {
+            font-size: 17px;
+            font-weight: 600;
+            letter-spacing: -0.015em;
+            margin-bottom: 6px;
+            color: var(--text);
+            transition: color 0.25s;
         }
 
-        @media (max-width: 520px) {
-            h1 { font-size: 28px; }
-            .card { padding: 20px; }
-            .field-row { grid-template-columns: 1fr; }
-            .token-count { font-size: 42px; }
+        .card:hover .card-name {
+            color: var(--card-accent, var(--accent));
+        }
+
+        .card-desc {
+            font-size: 13.5px;
+            color: var(--text-muted);
+            line-height: 1.55;
+            margin-bottom: 2px;
+            transition: color 0.25s;
+        }
+
+        .card:hover .card-desc {
+            color: var(--text-secondary);
+        }
+
+        .card-tag {
+            display: inline-flex;
+            align-items: center;
+            align-self: flex-start;
+            margin-top: 14px;
+            padding: 4px 12px;
+            border-radius: 100px;
+            font-family: 'Space Mono', monospace;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--card-accent, var(--accent));
+            background: var(--card-bg, var(--accent-soft));
+            border: 1px solid color-mix(in srgb, var(--card-accent, var(--accent)) 15%, transparent);
+            transition: all 0.25s ease;
+        }
+
+        .card:hover .card-tag {
+            background: color-mix(in srgb, var(--card-accent, var(--accent)) 12%, transparent);
+            border-color: color-mix(in srgb, var(--card-accent, var(--accent)) 25%, transparent);
+        }
+
+        /* Category colors */
+        .section[data-cat="explore"] { --cat-accent: #4f46e5; --cat-bg: #eef2ff; --cat-glow: rgba(79, 70, 229, 0.06); }
+        .section[data-cat="multimodal"] { --cat-accent: #0891b2; --cat-bg: #ecfeff; --cat-glow: rgba(8, 145, 178, 0.06); }
+        .section[data-cat="research"] { --cat-accent: #059669; --cat-bg: #ecfdf5; --cat-glow: rgba(5, 150, 105, 0.06); }
+        .section[data-cat="tools"] { --cat-accent: #7c3aed; --cat-bg: #f5f3ff; --cat-glow: rgba(124, 58, 237, 0.06); }
+        .section[data-cat="create"] { --cat-accent: #d97706; --cat-bg: #fffbeb; --cat-glow: rgba(217, 119, 6, 0.06); }
+
+        [data-theme="dark"] .section[data-cat="explore"] { --cat-bg: #4f46e518; --cat-glow: rgba(99, 102, 241, 0.08); }
+        [data-theme="dark"] .section[data-cat="multimodal"] { --cat-bg: #0891b218; --cat-glow: rgba(8, 145, 178, 0.08); }
+        [data-theme="dark"] .section[data-cat="research"] { --cat-bg: #05966918; --cat-glow: rgba(52, 211, 153, 0.08); }
+        [data-theme="dark"] .section[data-cat="tools"] { --cat-bg: #7c3aed18; --cat-glow: rgba(167, 139, 250, 0.08); }
+        [data-theme="dark"] .section[data-cat="create"] { --cat-bg: #d9770618; --cat-glow: rgba(251, 191, 36, 0.08); }
+
+        .section[data-cat] .card {
+            --card-accent: var(--cat-accent);
+            --card-bg: var(--cat-bg);
+            --card-glow: var(--cat-glow);
+        }
+
+        /* Animations */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .hero { padding: 40px 20px 12px; }
+            .sections { padding: 16px 20px 60px; }
+            .cards { grid-template-columns: 1fr; gap: 12px; }
+            .hero h1 { font-size: 32px; }
+            .card-arrow { opacity: 1; transform: translateX(0); }
+            .card::before { opacity: 1; transform: scaleY(1); }
         }
     </style>
+    <script>
+        (function() {
+            var t = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', t);
+        })();
+    </script>
 </head>
 <body>
-    <div class="container">
-        <nav class="nav">
-            <span class="nav-brand">Gemini Tools</span>
-            <div class="nav-right">
-                <a href="models.html" class="nav-link">Models</a>
-                <a href="describe.html" class="nav-link">Describer</a>
-                <a href="embed.html" class="nav-link">Embeddings</a>
-                <a href="extract.html" class="nav-link">Extractor</a>
-                <a href="prompt.html" class="nav-link">Playground</a>
-                <a href="search.html" class="nav-link">Search</a>
-                <a href="detect.html" class="nav-link">Detector</a>
-                <a href="pdf.html" class="nav-link">PDF</a>
-                <a href="video.html" class="nav-link">Video</a>
-                <a href="story.html" class="nav-link">Story</a>
-                <a href="animate.html" class="nav-link">Animate</a>
-                <button class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
-                    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-                    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-                </button>
-            </div>
-        </nav>
 
-        <div class="header">
-            <h1>Token Counter</h1>
-            <p class="subtitle">Count tokens using the Gemini API's countTokens endpoint. No LLM call, no cost.</p>
-        </div>
+<div class="hero">
+    <div class="hero-label">Gemini API Toolkit</div>
+    <h1>Explore <span>Gemini</span> Tools</h1>
+    <p>Interactive browser tools for the Gemini API. No setup required &mdash; just add your API key and start experimenting.</p>
+    <div class="tool-count"><strong>19</strong> tools across 5 categories</div>
+</div>
 
-        <div class="card">
-            <div class="field-row">
-                <div class="field">
-                    <label for="api-key-input">API Key</label>
-                    <input type="password" id="api-key-input" placeholder="Your Gemini key" autocomplete="off" data-lpignore="true" data-1p-ignore>
-                </div>
-                <div class="field">
-                    <label for="model-input">Model</label>
-                    <input type="text" id="model-input" value="gemini-2.5-flash" placeholder="e.g. gemini-2.5-flash">
-                </div>
-            </div>
+<div class="sections" id="sections"></div>
 
-            <div class="field">
-                <label for="text-input">Content</label>
-                <textarea id="text-input" placeholder="Paste or type the text you want to tokenize..."></textarea>
-            </div>
+<script>
+(function() {
+    var tools = [
+        { cat: 'Create', catId: 'create', icon: '\u{1F3A8}', items: [
+            { href: 'tts.html', icon: '\u{1F399}\uFE0F', name: 'Text to Speech', desc: 'Generate natural-sounding speech from text with multiple voice options.', tag: 'Audio' },
+            { href: 'story.html', icon: '\u{1F4D6}', name: 'Story Illustrator', desc: 'Generate illustrated storybooks with consistent characters and scenes.', tag: 'Images' },
+            { href: 'animate.html', icon: '\u{1F3AC}', name: 'Animated Video', desc: 'Create AI-generated story videos with narration and animation.', tag: 'Video' },
+        ]},
+        { cat: 'Tools', catId: 'tools', icon: '\u2699\uFE0F', items: [
+            { href: 'think.html', icon: '\u{1F9E0}', name: 'Thinking', desc: 'See the model\'s step-by-step reasoning process for complex problems.', tag: 'Reasoning' },
+            { href: 'code.html', icon: '\u{1F4BB}', name: 'Code Runner', desc: 'Generate and execute Python code with automatic error correction.', tag: 'Execution' },
+            { href: 'maps.html', icon: '\u{1F5FA}\uFE0F', name: 'Maps', desc: 'Location-aware queries with Google Maps integration and visualization.', tag: 'Grounding' },
+            { href: 'extract.html', icon: '\u{1F4CB}', name: 'Extractor', desc: 'Extract structured data from unstructured text using JSON schemas.', tag: 'Structured' },
+            { href: 'embed.html', icon: '\u{1F9EE}', name: 'Embeddings', desc: 'Compute text embeddings and measure semantic similarity between passages.', tag: 'Vectors' },
+        ]},
+        { cat: 'Research', catId: 'research', icon: '\u{1F9E0}', items: [
+            { href: 'prompt.html', icon: '\u{1F4AC}', name: 'Playground', desc: 'Chat with Gemini using custom system instructions and model parameters.', tag: 'Chat' },
+            { href: 'search.html', icon: '\u{1F310}', name: 'Search', desc: 'Grounded search with Google. Get real-time, cited answers.', tag: 'Grounding' },
+            { href: 'pdf.html', icon: '\u{1F4C4}', name: 'PDF Analyzer', desc: 'Upload PDFs and query their content with AI-powered analysis.', tag: 'Documents' },
+            { href: 'url.html', icon: '\u{1F517}', name: 'URL Context', desc: 'Summarize and analyze web pages by providing a URL.', tag: 'Web' },
+            { href: 'files.html', icon: '\u{1F4C2}', name: 'File Search', desc: 'Upload documents and search across them with natural language.', tag: 'Documents' },
+            { href: 'research.html', icon: '\u{1F50E}', name: 'Deep Research', desc: 'Multi-step research agent that synthesizes information across sources.', tag: 'Agent' },
+        ]},
+        { cat: 'Multimodal', catId: 'multimodal', icon: '\u{1F441}', items: [
+            { href: 'describe.html', icon: '\u{1F5BC}', name: 'Image Describer', desc: 'Upload any image and get detailed AI-generated descriptions and analysis.', tag: 'Vision' },
+            { href: 'detect.html', icon: '\u{1F3AF}', name: 'Object Detector', desc: 'Detect and locate objects in images with labeled bounding boxes.', tag: 'Vision' },
+            { href: 'video.html', icon: '\u{1F3AC}', name: 'Video Analyzer', desc: 'Upload videos and ask questions about their content, scenes, and details.', tag: 'Vision' },
+        ]},
+        { cat: 'Model Metadata', catId: 'explore', icon: '\u{1F4CA}', items: [
+            { href: 'tokens.html', icon: '\u{1F522}', name: 'Token Counter', desc: 'Count tokens for text, images, and files. Estimate costs across all Gemini models.', tag: 'Core' },
+            { href: 'models.html', icon: '\u{1F916}', name: 'Model Explorer', desc: 'Browse all available Gemini models with specs, pricing, and capability details.', tag: 'Reference' },
+        ]},
+    ];
 
-            <div class="actions">
-                <button id="count-btn" onclick="countTokens()">Count Tokens</button>
-                <span class="shortcut-hint"><kbd>Ctrl</kbd> + <kbd>Enter</kbd></span>
-            </div>
+    var container = document.getElementById('sections');
 
-            <div class="result" id="result">
-                <div class="result-inner">
-                    <div class="token-count" id="token-count">0</div>
-                    <div class="token-label">tokens</div>
-                </div>
-            </div>
+    tools.forEach(function(cat) {
+        var section = document.createElement('div');
+        section.className = 'section';
+        section.setAttribute('data-cat', cat.catId);
 
-            <div class="error" id="error"></div>
-        </div>
+        var header = document.createElement('div');
+        header.className = 'section-header';
 
-        <div class="footer">
-            <p class="info">~100 tokens = 60-80 English words</p>
-            <div class="privacy-notice">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                <span>Your API key is saved in your browser's session storage &mdash; shared across all Gemini Tools pages, but automatically cleared when you close the tab. It is only sent directly to the Google Gemini API.</span>
-            </div>
-        </div>
-    </div>
+        var icon = document.createElement('div');
+        icon.className = 'section-icon';
+        icon.style.background = 'var(--cat-bg)';
+        icon.textContent = cat.icon;
+        header.appendChild(icon);
 
-    <script>
-        const API_BASE = 'https://generativelanguage.googleapis.com/v1beta';
+        var title = document.createElement('span');
+        title.className = 'section-title';
+        title.textContent = cat.cat;
+        header.appendChild(title);
 
-        function getPreferredTheme() {
-            const stored = localStorage.getItem('theme');
-            if (stored) return stored;
-            return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        }
+        var line = document.createElement('div');
+        line.className = 'section-line';
+        header.appendChild(line);
 
-        function applyTheme(theme) {
-            document.documentElement.setAttribute('data-theme', theme);
-            localStorage.setItem('theme', theme);
-        }
+        section.appendChild(header);
 
-        function toggleTheme() {
-            const current = document.documentElement.getAttribute('data-theme');
-            applyTheme(current === 'dark' ? 'light' : 'dark');
-        }
+        var grid = document.createElement('div');
+        grid.className = 'cards';
 
-        applyTheme(getPreferredTheme());
+        cat.items.forEach(function(item) {
+            var a = document.createElement('a');
+            a.className = 'card';
+            a.href = item.href;
 
-        async function countTokens() {
-            const apiKey = document.getElementById('api-key-input').value.trim();
-            const model = document.getElementById('model-input').value.trim();
-            const text = document.getElementById('text-input').value;
-            const btn = document.getElementById('count-btn');
-            const result = document.getElementById('result');
-            const error = document.getElementById('error');
+            // Track mouse position for glow effect
+            a.addEventListener('mousemove', function(e) {
+                var rect = a.getBoundingClientRect();
+                a.style.setProperty('--mouse-x', (e.clientX - rect.left) + 'px');
+                a.style.setProperty('--mouse-y', (e.clientY - rect.top) + 'px');
+            });
 
-            error.classList.remove('visible');
+            var top = document.createElement('div');
+            top.className = 'card-top';
 
-            if (!apiKey) {
-                error.textContent = 'Please enter your Gemini API key.';
-                error.classList.add('visible');
-                return;
-            }
+            var emoji = document.createElement('div');
+            emoji.className = 'card-emoji';
+            emoji.textContent = item.icon;
+            top.appendChild(emoji);
 
-            if (!model) {
-                error.textContent = 'Please enter a model name.';
-                error.classList.add('visible');
-                return;
-            }
+            var arrow = document.createElement('div');
+            arrow.className = 'card-arrow';
+            arrow.textContent = '\u2192';
+            top.appendChild(arrow);
 
-            if (!text.trim()) {
-                result.classList.add('visible');
-                document.getElementById('token-count').textContent = '0';
-                return;
-            }
+            a.appendChild(top);
 
-            btn.disabled = true;
-            btn.textContent = 'Counting\u2026';
+            var name = document.createElement('div');
+            name.className = 'card-name';
+            name.textContent = item.name;
+            a.appendChild(name);
 
-            try {
-                const url = `${API_BASE}/models/${encodeURIComponent(model)}:countTokens?key=${encodeURIComponent(apiKey)}`;
-                const resp = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text }] }] }),
-                });
+            var desc = document.createElement('div');
+            desc.className = 'card-desc';
+            desc.textContent = item.desc;
+            a.appendChild(desc);
 
-                const data = await resp.json();
-                if (data.error) throw new Error(data.error.message || 'API error');
+            var tag = document.createElement('span');
+            tag.className = 'card-tag';
+            tag.textContent = item.tag;
+            a.appendChild(tag);
 
-                document.getElementById('token-count').textContent = data.totalTokens.toLocaleString();
-                result.classList.add('visible');
-            } catch (err) {
-                error.textContent = err.message;
-                error.classList.add('visible');
-            } finally {
-                btn.disabled = false;
-                btn.textContent = 'Count Tokens';
-            }
-        }
-
-        document.getElementById('text-input').addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) countTokens();
+            grid.appendChild(a);
         });
 
-    </script>
-    <script src="nav.js"></script>
+        section.appendChild(grid);
+        container.appendChild(section);
+    });
+})();
+</script>
+
+<script src="nav.js"></script>
 </body>
 </html>

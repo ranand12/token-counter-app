@@ -6,10 +6,10 @@
 
     var sections = [
         { title: '', links: [
-            ['home.html', 'Home', 'All tools at a glance'],
+            ['index.html', 'Home', 'All tools at a glance'],
         ]},
         { title: 'Analyze', links: [
-            ['index.html', 'Token Counter', 'Count tokens in text and images'],
+            ['tokens.html', 'Token Counter', 'Count tokens in text and images'],
             ['models.html', 'Model Explorer', 'Browse available Gemini models'],
         ]},
         { title: 'Vision', links: [
@@ -64,7 +64,7 @@
     var brand = document.createElement('a');
     brand.className = 'gt-topbar-brand';
     brand.textContent = 'Gemini Tools';
-    brand.href = 'home.html';
+    brand.href = 'index.html';
     brand.style.textDecoration = 'none';
     brand.style.color = 'inherit';
     topbar.appendChild(brand);
@@ -151,7 +151,7 @@
     var sidebarBrand = document.createElement('a');
     sidebarBrand.className = 'gt-sidebar-brand';
     sidebarBrand.textContent = 'Gemini Tools';
-    sidebarBrand.href = 'home.html';
+    sidebarBrand.href = 'index.html';
     sidebarBrand.style.textDecoration = 'none';
     sidebarBrand.style.color = 'inherit';
     sidebarHeader.appendChild(sidebarBrand);
