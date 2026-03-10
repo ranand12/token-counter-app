@@ -31,6 +31,7 @@
             ['code.html', 'Code Runner', 'Generate and execute Python code'],
             ['maps.html', 'Maps', 'Location-aware queries with Google Maps'],
             ['research.html', 'Deep Research', 'Multi-step research agent'],
+            ['live.html', 'Live Chat', 'Real-time voice & text conversation'],
         ]},
         { title: 'Creative', links: [
             ['tts.html', 'Text to Speech', 'Generate speech from text'],

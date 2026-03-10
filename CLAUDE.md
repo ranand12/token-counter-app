@@ -19,13 +19,14 @@ index.html (Home), tokens.html (Token Counter), models.html, describe.html, embe
 extract.html, prompt.html (Playground), search.html, detect.html (3D Spatial),
 pdf.html, video.html, animate.html, story.html, tts.html (Text-to-Speech),
 think.html (Thinking), code.html (Code Runner), url.html (URL Context),
-maps.html (Maps), research.html (Deep Research), files.html (File Search)
+maps.html (Maps), research.html (Deep Research), files.html (File Search),
+live.html (Live Chat)
 
 ## Nav Structure (nav.js)
 - Analyze: Token Counter, Model Explorer
 - Vision: Image Describer, 3D Spatial, Video Analyzer
 - Text & Data: Playground, Extractor, Embeddings, Search, PDF, URL Context, File Search
-- AI Tools: Thinking, Code Runner, Maps, Deep Research
+- AI Tools: Thinking, Code Runner, Maps, Deep Research, Live Chat
 - Creative: Text to Speech, Story Illustrator, Animated Video
 
 ## UX Principle
