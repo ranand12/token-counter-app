@@ -280,7 +280,7 @@
             background: var(--accent-hover);
         }
 
-        .btn-mic {
+        .btn-media {
             width: 40px;
             height: 40px;
             border-radius: 50%;
@@ -293,26 +293,62 @@
             position: relative;
         }
 
-        .btn-mic:hover:not(:disabled) {
+        .btn-media:hover:not(:disabled) {
             background: var(--accent-soft);
             border-color: var(--accent);
         }
 
-        .btn-mic.active {
+        .btn-media.active {
             background: var(--red);
             border-color: var(--red);
             color: white;
-            animation: mic-pulse 1.5s ease-in-out infinite;
+            animation: media-pulse 1.5s ease-in-out infinite;
         }
 
-        .btn-mic svg {
+        .btn-media svg {
             width: 18px;
             height: 18px;
         }
 
-        @keyframes mic-pulse {
+        @keyframes media-pulse {
             0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.4); }
             50% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
+        }
+
+        .video-preview-bar {
+            display: none;
+            padding: 8px 16px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-elevated);
+            align-items: center;
+            gap: 10px;
+        }
+
+        .video-preview-bar.active {
+            display: flex;
+        }
+
+        .video-preview-bar video,
+        .video-preview-bar canvas {
+            width: 120px;
+            height: 90px;
+            object-fit: cover;
+            border-radius: 8px;
+            background: #000;
+        }
+
+        .video-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .video-fps {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-left: auto;
         }
 
         .connect-bar {
@@ -421,14 +457,35 @@
         <div class="error" id="error"></div>
 
         <div class="chat-area">
+            <div class="video-preview-bar" id="videoPreviewBar">
+                <video id="videoPreview" autoplay muted playsinline></video>
+                <canvas id="videoCanvas" style="display:none"></canvas>
+                <div>
+                    <div class="video-label" id="videoLabel">Camera</div>
+                    <div class="video-fps" id="videoFps">1 fps</div>
+                </div>
+            </div>
             <div class="chat-messages" id="chatMessages"></div>
             <div class="chat-input-bar">
-                <button class="btn btn-mic" id="micBtn" onclick="toggleMic()" disabled title="Toggle microphone">
+                <button class="btn btn-media" id="micBtn" onclick="toggleMic()" disabled title="Toggle microphone">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
                         <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
                         <line x1="12" y1="19" x2="12" y2="23"/>
                         <line x1="8" y1="23" x2="16" y2="23"/>
+                    </svg>
+                </button>
+                <button class="btn btn-media" id="camBtn" onclick="toggleCamera()" disabled title="Toggle camera">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M23 7l-7 5 7 5V7z"/>
+                        <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+                    </svg>
+                </button>
+                <button class="btn btn-media" id="screenBtn" onclick="toggleScreen()" disabled title="Share screen">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                        <line x1="8" y1="21" x2="16" y2="21"/>
+                        <line x1="12" y1="17" x2="12" y2="21"/>
                     </svg>
                 </button>
                 <input type="text" id="chatInput" placeholder="Type a message..." disabled onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendText();}">
@@ -439,7 +496,7 @@
         <div class="footer">
             <p class="privacy-notice">
                 Your API key is saved in session storage and sent directly to the Google Gemini API.
-                Audio is streamed in real-time over WebSocket. Sessions last up to ~10 minutes.
+                Audio is streamed in real-time over WebSocket. Audio-only sessions last ~15 min; audio+video ~2 min.
                 See <a href="https://ai.google.dev/gemini-api/docs/live" target="_blank">Live API docs</a> for details.
             </p>
         </div>
@@ -460,7 +517,12 @@
         let nextPlayTime = 0;
         let connected = false;
         let micActive = false;
+        let videoStream = null;
+        let videoInterval = null;
+        let videoSource = null; // 'camera' or 'screen'
         let currentModelMsg = null;
+        const VIDEO_FPS = 1;
+        const VIDEO_MAX_DIM = 768;
 
         // Theme
         (function() {
@@ -505,6 +567,8 @@
             document.getElementById('chatInput').disabled = !enabled;
             document.getElementById('sendBtn').disabled = !enabled;
             document.getElementById('micBtn').disabled = !enabled;
+            document.getElementById('camBtn').disabled = !enabled;
+            document.getElementById('screenBtn').disabled = !enabled;
         }
 
         function addMessage(role, text) {
@@ -682,6 +746,7 @@
             setStatus('disconnected');
             setInputEnabled(false);
             stopMic();
+            stopVideo();
 
             if (ws) {
                 try { ws.close(); } catch(e) {}
@@ -826,6 +891,105 @@
                 binary += String.fromCharCode(bytes[i]);
             }
             return btoa(binary);
+        }
+
+        // --- Video (Camera / Screen Share) ---
+        function toggleCamera() {
+            if (videoSource === 'camera') {
+                stopVideo();
+            } else {
+                startVideo('camera');
+            }
+        }
+
+        function toggleScreen() {
+            if (videoSource === 'screen') {
+                stopVideo();
+            } else {
+                startVideo('screen');
+            }
+        }
+
+        async function startVideo(source) {
+            if (!connected) return;
+            // Stop any existing video first
+            stopVideo();
+
+            try {
+                if (source === 'camera') {
+                    videoStream = await navigator.mediaDevices.getUserMedia({
+                        video: { width: { ideal: VIDEO_MAX_DIM }, height: { ideal: VIDEO_MAX_DIM }, facingMode: 'user' }
+                    });
+                } else {
+                    videoStream = await navigator.mediaDevices.getDisplayMedia({
+                        video: { width: { max: VIDEO_MAX_DIM }, height: { max: VIDEO_MAX_DIM } }
+                    });
+                    // Handle user clicking "Stop sharing" in browser UI
+                    videoStream.getVideoTracks()[0].onended = function() { stopVideo(); };
+                }
+
+                var preview = document.getElementById('videoPreview');
+                preview.srcObject = videoStream;
+
+                document.getElementById('videoLabel').textContent = source === 'camera' ? 'Camera' : 'Screen';
+                document.getElementById('videoPreviewBar').classList.add('active');
+                document.getElementById(source === 'camera' ? 'camBtn' : 'screenBtn').classList.add('active');
+
+                videoSource = source;
+
+                // Start frame capture loop
+                videoInterval = setInterval(captureAndSendFrame, 1000 / VIDEO_FPS);
+                addMessage('system', (source === 'camera' ? 'Camera' : 'Screen share') + ' started');
+            } catch (err) {
+                showError((source === 'camera' ? 'Camera' : 'Screen share') + ' access denied: ' + err.message);
+            }
+        }
+
+        function stopVideo() {
+            if (videoInterval) {
+                clearInterval(videoInterval);
+                videoInterval = null;
+            }
+            if (videoStream) {
+                videoStream.getTracks().forEach(function(t) { t.stop(); });
+                videoStream = null;
+            }
+
+            var preview = document.getElementById('videoPreview');
+            preview.srcObject = null;
+            document.getElementById('videoPreviewBar').classList.remove('active');
+            document.getElementById('camBtn').classList.remove('active');
+            document.getElementById('screenBtn').classList.remove('active');
+            videoSource = null;
+        }
+
+        function captureAndSendFrame() {
+            if (!ws || ws.readyState !== WebSocket.OPEN || !videoStream) return;
+
+            var video = document.getElementById('videoPreview');
+            if (!video.videoWidth) return;
+
+            var canvas = document.getElementById('videoCanvas');
+            // Scale down maintaining aspect ratio
+            var scale = Math.min(VIDEO_MAX_DIM / video.videoWidth, VIDEO_MAX_DIM / video.videoHeight, 1);
+            canvas.width = Math.round(video.videoWidth * scale);
+            canvas.height = Math.round(video.videoHeight * scale);
+
+            var ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // Convert to JPEG base64
+            var dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+            var base64 = dataUrl.split(',')[1];
+
+            ws.send(JSON.stringify({
+                realtimeInput: {
+                    video: {
+                        data: base64,
+                        mimeType: 'image/jpeg'
+                    }
+                }
+            }));
         }
 
         // --- Audio Playback (gapless scheduling) ---
