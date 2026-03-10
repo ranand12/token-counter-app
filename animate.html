@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src https://generativelanguage.googleapis.com; img-src 'self' data: blob:; media-src blob: data:;">
-    <title>Gemini Animated Story Video</title>
+    <title>Gemini AI Video Generator (Veo)</title>
     <!--
     Copyright 2026 Google LLC.
 
@@ -70,14 +70,14 @@
         .card { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 28px; box-shadow: var(--shadow-sm); transition: background 0.3s, border-color 0.3s; }
         .field { margin-bottom: 18px; }
         .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px; }
-        .field-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 18px; }
         label { display: block; font-size: 13px; font-weight: 500; color: var(--text-secondary); margin-bottom: 6px; }
-        input[type="password"], input[type="text"], input[type="number"], textarea {
+        input[type="password"], input[type="text"], select, textarea {
             width: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px;
             padding: 10px 14px; font-family: inherit; font-size: 14px; color: var(--text); outline: none; transition: all 0.2s;
         }
+        select { cursor: pointer; }
         textarea { resize: vertical; min-height: 80px; }
-        input:focus, textarea:focus { border-color: var(--border-focus); box-shadow: 0 0 0 3px var(--accent-soft); }
+        input:focus, textarea:focus, select:focus { border-color: var(--border-focus); box-shadow: 0 0 0 3px var(--accent-soft); }
         input::placeholder, textarea::placeholder { color: var(--text-muted); }
 
         .presets { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
@@ -119,8 +119,9 @@
         }
         .video-action-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
 
-        .scene-preview { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-top: 12px; padding: 16px 20px; }
-        .scene-thumb { border-radius: 8px; width: 100%; aspect-ratio: 16/9; object-fit: cover; border: 1px solid var(--border); }
+        .enhanced-prompt { margin-top: 12px; padding: 10px 14px; background: var(--bg-elevated); border: 1px solid var(--border); border-radius: 8px; font-size: 13px; color: var(--text-secondary); line-height: 1.5; display: none; }
+        .enhanced-prompt.visible { display: block; }
+        .enhanced-prompt-label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
 
         .error { margin-top: 14px; padding: 10px 14px; background: var(--red-soft); border: 1px solid var(--red); border-radius: 8px; font-size: 13px; color: var(--red); display: none; }
         .error.visible { display: block; }
@@ -132,7 +133,7 @@
         @media (max-width: 520px) {
             h1 { font-size: 28px; }
             .card { padding: 20px; }
-            .field-row, .field-row-3 { grid-template-columns: 1fr; }
+            .field-row { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -160,8 +161,8 @@
         </nav>
 
         <div class="header">
-            <h1>Animated Story Video</h1>
-            <p class="subtitle">Generate an animated story video from a prompt. Gemini writes the scenes, generates illustrations, and assembles them into a video with Ken Burns transitions and narration text overlay.</p>
+            <h1>AI Video Generator</h1>
+            <p class="subtitle">Generate AI videos using Veo. Optionally enhance your prompt with Gemini before sending it to Veo for high-fidelity 8-second video generation with audio.</p>
         </div>
 
         <div class="card">
@@ -171,42 +172,46 @@
                     <input type="password" id="api-key-input" placeholder="Your Gemini key" autocomplete="off" data-lpignore="true" data-1p-ignore>
                 </div>
                 <div class="field">
-                    <label for="model-input">Text Model</label>
-                    <input type="text" id="model-input" value="gemini-2.5-flash" placeholder="e.g. gemini-2.5-flash">
+                    <label for="video-model-input">Video Model</label>
+                    <input type="text" id="video-model-input" value="veo-3.1-generate-preview" placeholder="e.g. veo-3.1-generate-preview">
                 </div>
             </div>
 
             <div class="field-row">
                 <div class="field">
-                    <label for="image-model-input">Image Model</label>
-                    <input type="text" id="image-model-input" value="gemini-3.1-flash-image-preview" placeholder="e.g. gemini-3.1-flash-image-preview">
+                    <label for="text-model-input">Text Model (for prompt enhancement)</label>
+                    <input type="text" id="text-model-input" value="gemini-2.5-flash" placeholder="e.g. gemini-2.5-flash">
+                </div>
+                <div class="field">
+                    <label for="aspect-ratio-input">Aspect Ratio</label>
+                    <select id="aspect-ratio-input">
+                        <option value="16:9" selected>Landscape (16:9)</option>
+                        <option value="9:16">Portrait (9:16)</option>
+                    </select>
                 </div>
             </div>
 
             <div class="field">
-                <label for="prompt-input">Story Prompt</label>
+                <label for="prompt-input">Video Prompt</label>
                 <div class="presets">
-                    <button class="preset" onclick="setPrompt('A lost kitten finds its way home through the city at night, guided by the stars and friendly animals along the way.')">Lost Kitten</button>
-                    <button class="preset" onclick="setPrompt('A magical library where books come alive at midnight. An old librarian discovers the secret and goes on an adventure through the stories.')">Magic Library</button>
-                    <button class="preset" onclick="setPrompt('A young astronaut discovers a tiny planet made entirely of candy, where gummy bears build cities and chocolate rivers flow through valleys.')">Candy Planet</button>
-                    <button class="preset" onclick="setPrompt('Four seasons of a cherry blossom tree: spring blooming, summer shade, autumn leaves falling, winter snow covering its branches.')">Four Seasons</button>
+                    <button class="preset" onclick="setPrompt('A lost kitten wanders through rainy city streets at night, neon signs reflecting in puddles, then finds a warm doorstep where a kind hand reaches out.')">Lost Kitten</button>
+                    <button class="preset" onclick="setPrompt('A time-lapse of a cherry blossom tree through all four seasons: spring petals falling, summer green canopy, autumn golden leaves, winter snow on bare branches.')">Four Seasons</button>
+                    <button class="preset" onclick="setPrompt('An astronaut floating in space discovers a tiny glowing planet made of candy, reaches out to touch it, and colorful sparkles burst outward.')">Candy Planet</button>
+                    <button class="preset" onclick="setPrompt('A cinematic drone shot sweeping over misty mountains at sunrise, golden light breaking through clouds, revealing a hidden lake below.')">Mountain Dawn</button>
                 </div>
-                <textarea id="prompt-input" rows="3" placeholder="Describe your animated story...">A lost kitten finds its way home through the city at night, guided by the stars and friendly animals along the way.</textarea>
+                <textarea id="prompt-input" rows="3" placeholder="Describe your video scene in detail...">A cinematic drone shot sweeping over misty mountains at sunrise, golden light breaking through clouds, revealing a hidden lake below.</textarea>
             </div>
 
-            <div class="field-row-3">
-                <div class="field">
-                    <label for="scenes-input">Scenes</label>
-                    <input type="number" id="scenes-input" value="4" min="2" max="6">
-                </div>
-                <div class="field">
-                    <label for="duration-input">Sec / Scene</label>
-                    <input type="number" id="duration-input" value="4" min="2" max="8">
-                </div>
-                <div class="field">
-                    <label for="style-input">Art Style</label>
-                    <input type="text" id="style-input" value="digital painting, cinematic" placeholder="e.g. anime, watercolor">
-                </div>
+            <div class="field">
+                <label>
+                    <input type="checkbox" id="enhance-prompt" checked style="width: auto; margin-right: 6px;">
+                    Enhance prompt with Gemini before generating video
+                </label>
+            </div>
+
+            <div class="enhanced-prompt" id="enhanced-prompt-display">
+                <div class="enhanced-prompt-label">Enhanced Prompt</div>
+                <div id="enhanced-prompt-text"></div>
             </div>
 
             <div class="actions">
@@ -224,9 +229,8 @@
 
         <div class="video-result" id="video-result">
             <div class="video-result-inner">
-                <div class="video-result-label">Your Animated Story</div>
+                <div class="video-result-label">Your Generated Video</div>
                 <video class="video-player" id="video-player" controls></video>
-                <div class="scene-preview" id="scene-preview"></div>
                 <div class="video-actions">
                     <button class="video-action-btn" id="download-btn" onclick="downloadVideo()">Download Video</button>
                 </div>
@@ -279,287 +283,153 @@
             });
         }
 
-        function loadImageFromBase64(base64, mimeType) {
-            return new Promise(function(resolve, reject) {
-                var img = new Image();
-                img.onload = function() { resolve(img); };
-                img.onerror = reject;
-                img.src = 'data:' + mimeType + ';base64,' + base64;
-            });
-        }
+        async function enhancePrompt(apiKey, textModel, userPrompt) {
+            var enhanceReq = 'You are a cinematic video prompt expert. Enhance the following video description into a detailed, vivid prompt for AI video generation. ' +
+                'Include: camera movements, lighting, mood, specific visual details, and sound/dialogue descriptions. ' +
+                'Keep it to 2-3 sentences. Return ONLY the enhanced prompt text, nothing else.\n\n' +
+                'User prompt: ' + userPrompt;
 
-        function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
-            var words = text.split(' ');
-            var line = '';
-            var lines = [];
-            for (var i = 0; i < words.length; i++) {
-                var testLine = line + words[i] + ' ';
-                if (ctx.measureText(testLine).width > maxWidth && line.length > 0) {
-                    lines.push(line.trim());
-                    line = words[i] + ' ';
-                } else {
-                    line = testLine;
-                }
-            }
-            lines.push(line.trim());
-            var startY = y - ((lines.length - 1) * lineHeight) / 2;
-            for (var j = 0; j < lines.length; j++) {
-                ctx.fillText(lines[j], x, startY + j * lineHeight);
-            }
-            return lines.length;
+            var url = API_BASE + '/models/' + encodeURIComponent(textModel) + ':generateContent?key=' + encodeURIComponent(apiKey);
+            var resp = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: enhanceReq }] }]
+                })
+            });
+
+            var data = await resp.json();
+            if (data.error) throw new Error('Prompt enhancement failed: ' + (data.error.message || JSON.stringify(data.error)));
+
+            var text = (data.candidates && data.candidates[0] && data.candidates[0].content &&
+                data.candidates[0].content.parts && data.candidates[0].content.parts[0] &&
+                data.candidates[0].content.parts[0].text) || '';
+            return text.trim();
         }
 
         async function generateVideo() {
             var apiKey = document.getElementById('api-key-input').value.trim();
-            var model = document.getElementById('model-input').value.trim();
-            var imageModel = document.getElementById('image-model-input').value.trim() || model;
-            var storyPrompt = document.getElementById('prompt-input').value.trim();
-            var numScenes = parseInt(document.getElementById('scenes-input').value) || 4;
-            var secPerScene = parseInt(document.getElementById('duration-input').value) || 4;
-            var artStyle = document.getElementById('style-input').value.trim() || 'digital painting, cinematic';
+            var videoModel = document.getElementById('video-model-input').value.trim();
+            var textModel = document.getElementById('text-model-input').value.trim();
+            var userPrompt = document.getElementById('prompt-input').value.trim();
+            var aspectRatio = document.getElementById('aspect-ratio-input').value;
+            var shouldEnhance = document.getElementById('enhance-prompt').checked;
             var btn = document.getElementById('generate-btn');
             var error = document.getElementById('error');
             var progressSection = document.getElementById('progress-section');
             var videoResult = document.getElementById('video-result');
+            var enhancedDisplay = document.getElementById('enhanced-prompt-display');
 
             error.classList.remove('visible');
             videoResult.classList.remove('visible');
+            enhancedDisplay.classList.remove('visible');
 
             if (!apiKey) { error.textContent = 'Please enter your Gemini API key.'; error.classList.add('visible'); return; }
-            if (!model) { error.textContent = 'Please enter a model name.'; error.classList.add('visible'); return; }
-            if (!storyPrompt) { error.textContent = 'Please enter a story prompt.'; error.classList.add('visible'); return; }
+            if (!videoModel) { error.textContent = 'Please enter a video model name.'; error.classList.add('visible'); return; }
+            if (!userPrompt) { error.textContent = 'Please enter a video prompt.'; error.classList.add('visible'); return; }
 
             btn.disabled = true;
             btn.textContent = 'Generating\u2026';
             progressSection.classList.add('visible');
 
-            var steps = [
-                { label: 'Writing story scenes\u2026', active: true, done: false },
-                { label: 'Generating illustrations\u2026', active: false, done: false },
-                { label: 'Composing video\u2026', active: false, done: false }
-            ];
+            var steps = [];
+            if (shouldEnhance) {
+                steps = [
+                    { label: 'Enhancing prompt with Gemini\u2026', active: true, done: false },
+                    { label: 'Generating video with Veo\u2026', active: false, done: false },
+                    { label: 'Downloading video\u2026', active: false, done: false }
+                ];
+            } else {
+                steps = [
+                    { label: 'Generating video with Veo\u2026', active: true, done: false },
+                    { label: 'Downloading video\u2026', active: false, done: false }
+                ];
+            }
             updateProgress(steps);
 
             try {
-                // Step 1: Generate story scenes
-                var scenePrompt = 'Write a short animated story with exactly ' + numScenes + ' scenes based on: "' + storyPrompt + '"\n\n' +
-                    'For each scene provide:\n1. narration: A short narration text (1-2 sentences) to display on screen\n2. image_prompt: A detailed visual description for generating an illustration\n\n' +
-                    'Return ONLY valid JSON.';
+                var videoPrompt = userPrompt;
 
-                var storyUrl = API_BASE + '/models/' + encodeURIComponent(model) + ':generateContent?key=' + encodeURIComponent(apiKey);
-                var storyResp = await fetch(storyUrl, {
+                // Step 1: Optionally enhance the prompt
+                if (shouldEnhance && textModel) {
+                    videoPrompt = await enhancePrompt(apiKey, textModel, userPrompt);
+                    document.getElementById('enhanced-prompt-text').textContent = videoPrompt;
+                    enhancedDisplay.classList.add('visible');
+                    steps[0] = { label: 'Prompt enhanced', active: false, done: true };
+                    steps[1] = { label: 'Generating video with Veo\u2026', active: true, done: false };
+                    updateProgress(steps);
+                }
+
+                var veoStepIdx = shouldEnhance ? 1 : 0;
+                var downloadStepIdx = shouldEnhance ? 2 : 1;
+
+                // Step 2: Submit video generation request to Veo
+                var veoUrl = API_BASE + '/models/' + encodeURIComponent(videoModel) + ':predictLongRunning?key=' + encodeURIComponent(apiKey);
+                var veoBody = {
+                    instances: [{ prompt: videoPrompt }]
+                };
+                if (aspectRatio !== '16:9') {
+                    veoBody.parameters = { aspectRatio: aspectRatio };
+                }
+
+                var veoResp = await fetch(veoUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: scenePrompt }] }],
-                        generationConfig: {
-                            responseMimeType: 'application/json',
-                            responseSchema: {
-                                type: 'OBJECT',
-                                properties: {
-                                    scenes: {
-                                        type: 'ARRAY',
-                                        items: {
-                                            type: 'OBJECT',
-                                            properties: {
-                                                narration: { type: 'STRING' },
-                                                image_prompt: { type: 'STRING' }
-                                            },
-                                            required: ['narration', 'image_prompt']
-                                        }
-                                    }
-                                },
-                                required: ['scenes']
-                            }
-                        }
-                    })
+                    body: JSON.stringify(veoBody)
                 });
 
-                var storyData = await storyResp.json();
-                if (storyData.error) throw new Error(storyData.error.message || 'Story generation failed');
+                var veoData = await veoResp.json();
+                if (veoData.error) throw new Error('Veo API error: ' + (veoData.error.message || JSON.stringify(veoData.error)));
+                if (!veoData.name) throw new Error('No operation name returned from Veo. Response: ' + JSON.stringify(veoData).substring(0, 200));
 
-                var storyText = (storyData.candidates && storyData.candidates[0] && storyData.candidates[0].content && storyData.candidates[0].content.parts && storyData.candidates[0].content.parts[0] && storyData.candidates[0].content.parts[0].text) || '';
-                var story = JSON.parse(storyText);
-                var scenes = story.scenes;
-                if (!scenes || scenes.length === 0) throw new Error('No scenes generated');
+                var operationName = veoData.name;
 
-                steps[0] = { label: 'Story written (' + scenes.length + ' scenes)', active: false, done: true };
-                steps[1] = { label: 'Generating illustrations\u2026', active: true, done: false };
-                updateProgress(steps);
+                // Poll until video is ready
+                var pollCount = 0;
+                var maxPolls = 120; // 10 minutes max (5s intervals)
+                var isDone = false;
+                var videoUri = null;
 
-                // Step 2: Generate images for each scene
-                var sceneImages = [];
-                var scenePreview = document.getElementById('scene-preview');
-                while (scenePreview.firstChild) scenePreview.removeChild(scenePreview.firstChild);
+                while (!isDone && pollCount < maxPolls) {
+                    await new Promise(function(r) { setTimeout(r, 5000); });
+                    pollCount++;
 
-                for (var i = 0; i < scenes.length; i++) {
-                    var scene = scenes[i];
-                    steps[1] = { label: 'Generating illustration ' + (i + 1) + '/' + scenes.length + '\u2026', active: true, done: false };
+                    steps[veoStepIdx] = { label: 'Generating video with Veo\u2026 (' + (pollCount * 5) + 's elapsed)', active: true, done: false };
                     updateProgress(steps);
 
-                    var imgPrompt = 'Generate a ' + artStyle + ' illustration. Scene: ' + scene.image_prompt + '. Wide landscape format (16:9), no text or words in the image, highly detailed, vibrant colors.';
+                    var pollUrl = API_BASE + '/' + operationName + '?key=' + encodeURIComponent(apiKey);
+                    var pollResp = await fetch(pollUrl);
+                    var pollData = await pollResp.json();
 
-                    var imgUrl = API_BASE + '/models/' + encodeURIComponent(imageModel) + ':generateContent?key=' + encodeURIComponent(apiKey);
-                    var imgResp = await fetch(imgUrl, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{ parts: [{ text: imgPrompt }] }],
-                            generationConfig: { responseModalities: ['TEXT', 'IMAGE'] }
-                        })
-                    });
+                    if (pollData.error) throw new Error('Polling error: ' + (pollData.error.message || JSON.stringify(pollData.error)));
 
-                    var imgData = await imgResp.json();
-                    if (imgData.error) throw new Error('Image API error: ' + (imgData.error.message || JSON.stringify(imgData.error)));
-                    var imagePart = null;
-                    if (imgData.candidates && imgData.candidates[0] && imgData.candidates[0].content && imgData.candidates[0].content.parts) {
-                        imgData.candidates[0].content.parts.forEach(function(part) {
-                            var data = part.inlineData || part.inline_data;
-                            if (data && (data.mimeType || data.mime_type || '').startsWith('image/')) {
-                                imagePart = data;
-                            }
-                        });
-                    }
-
-                    if (imagePart) {
-                        var loadedImg = await loadImageFromBase64(imagePart.data, imagePart.mimeType || imagePart.mime_type);
-                        sceneImages.push({ img: loadedImg, narration: scene.narration });
-
-                        var thumb = document.createElement('img');
-                        thumb.className = 'scene-thumb';
-                        thumb.alt = 'Scene ' + (i + 1);
-                        thumb.src = loadedImg.src;
-                        scenePreview.appendChild(thumb);
-                    } else {
-                        throw new Error('Image generation failed for scene ' + (i + 1) + '. The image model "' + imageModel + '" may not support image generation. Try: gemini-3.1-flash-image-preview');
+                    if (pollData.done) {
+                        isDone = true;
+                        // Extract video URI from response
+                        var genResponse = pollData.response;
+                        if (genResponse && genResponse.generateVideoResponse && genResponse.generateVideoResponse.generatedSamples &&
+                            genResponse.generateVideoResponse.generatedSamples.length > 0) {
+                            videoUri = genResponse.generateVideoResponse.generatedSamples[0].video.uri;
+                        } else {
+                            throw new Error('Video generation completed but no video found in response: ' + JSON.stringify(pollData).substring(0, 300));
+                        }
                     }
                 }
 
-                steps[1] = { label: 'All illustrations generated', active: false, done: true };
-                steps[2] = { label: 'Composing video\u2026', active: true, done: false };
+                if (!isDone) throw new Error('Video generation timed out after ' + (maxPolls * 5) + ' seconds. The operation may still be running.');
+
+                steps[veoStepIdx] = { label: 'Video generated', active: false, done: true };
+                steps[downloadStepIdx] = { label: 'Downloading video\u2026', active: true, done: false };
                 updateProgress(steps);
 
-                // Step 3: Compose video with Ken Burns effect and text overlay
-                var canvas = document.createElement('canvas');
-                canvas.width = 1280;
-                canvas.height = 720;
-                var ctx = canvas.getContext('2d');
-                var fps = 30;
-                var framesPerScene = secPerScene * fps;
-                var transitionFrames = Math.min(fps, framesPerScene / 4); // 1 second transition or 25% of scene
-                var totalFrames = framesPerScene * sceneImages.length;
+                // Step 3: Download the video
+                var downloadUrl = videoUri + '&key=' + encodeURIComponent(apiKey);
+                var videoResp = await fetch(downloadUrl);
+                if (!videoResp.ok) throw new Error('Failed to download video: ' + videoResp.status + ' ' + videoResp.statusText);
 
-                var stream = canvas.captureStream(fps);
-                var recorder = new MediaRecorder(stream, { mimeType: 'video/webm', videoBitsPerSecond: 4000000 });
-                var chunks = [];
-                recorder.ondataavailable = function(e) { if (e.data.size > 0) chunks.push(e.data); };
+                videoBlob = await videoResp.blob();
 
-                var videoReady = new Promise(function(resolve) {
-                    recorder.onstop = function() {
-                        videoBlob = new Blob(chunks, { type: 'video/webm' });
-                        resolve();
-                    };
-                });
-
-                recorder.start();
-                var currentFrame = 0;
-
-                function renderFrame() {
-                    var sceneIdx = Math.min(Math.floor(currentFrame / framesPerScene), sceneImages.length - 1);
-                    var frameInScene = currentFrame - sceneIdx * framesPerScene;
-                    var t = frameInScene / framesPerScene; // 0 to 1
-
-                    var scene = sceneImages[sceneIdx];
-
-                    // Ken Burns: slow zoom in + slight pan
-                    var scale = 1.0 + t * 0.15; // zoom from 1.0 to 1.15
-                    var panX = t * 30 * (sceneIdx % 2 === 0 ? 1 : -1); // alternate pan direction
-                    var panY = t * 15;
-
-                    // Clear
-                    ctx.fillStyle = '#000';
-                    ctx.fillRect(0, 0, 1280, 720);
-
-                    // Draw image with Ken Burns
-                    ctx.save();
-                    ctx.translate(640 + panX, 360 + panY);
-                    ctx.scale(scale, scale);
-                    ctx.translate(-640, -360);
-
-                    // Fit image to canvas
-                    var imgW = scene.img.width;
-                    var imgH = scene.img.height;
-                    var canvasRatio = 1280 / 720;
-                    var imgRatio = imgW / imgH;
-                    var drawW, drawH, drawX, drawY;
-                    if (imgRatio > canvasRatio) {
-                        drawH = 720;
-                        drawW = drawH * imgRatio;
-                        drawX = (1280 - drawW) / 2;
-                        drawY = 0;
-                    } else {
-                        drawW = 1280;
-                        drawH = drawW / imgRatio;
-                        drawX = 0;
-                        drawY = (720 - drawH) / 2;
-                    }
-                    ctx.drawImage(scene.img, drawX, drawY, drawW, drawH);
-                    ctx.restore();
-
-                    // Fade in/out between scenes (skip fade-in on first, fade-out on last)
-                    if (frameInScene < transitionFrames && sceneIdx > 0) {
-                        var fadeAlpha = 1 - (frameInScene / transitionFrames);
-                        ctx.fillStyle = 'rgba(0,0,0,' + fadeAlpha + ')';
-                        ctx.fillRect(0, 0, 1280, 720);
-                    } else if (frameInScene > framesPerScene - transitionFrames && sceneIdx < sceneImages.length - 1) {
-                        var fadeAlpha2 = (frameInScene - (framesPerScene - transitionFrames)) / transitionFrames;
-                        ctx.fillStyle = 'rgba(0,0,0,' + fadeAlpha2 + ')';
-                        ctx.fillRect(0, 0, 1280, 720);
-                    }
-
-                    // Text overlay with background
-                    var textAlpha = 1;
-                    if (frameInScene < transitionFrames * 1.5) {
-                        textAlpha = Math.max(0, (frameInScene - transitionFrames * 0.5) / transitionFrames);
-                    } else if (frameInScene > framesPerScene - transitionFrames * 1.5) {
-                        textAlpha = Math.max(0, (framesPerScene - frameInScene - transitionFrames * 0.5) / transitionFrames);
-                    }
-
-                    if (textAlpha > 0) {
-                        ctx.save();
-                        ctx.globalAlpha = textAlpha;
-
-                        // Semi-transparent background bar
-                        ctx.fillStyle = 'rgba(0,0,0,0.55)';
-                        ctx.fillRect(0, 580, 1280, 140);
-
-                        // Narration text
-                        ctx.fillStyle = '#ffffff';
-                        ctx.font = '500 22px DM Sans, sans-serif';
-                        ctx.textAlign = 'center';
-                        wrapText(ctx, scene.narration, 640, 650, 1100, 30);
-
-                        // Scene indicator
-                        ctx.font = '600 14px DM Sans, sans-serif';
-                        ctx.fillStyle = 'rgba(255,255,255,0.6)';
-                        ctx.textAlign = 'left';
-                        ctx.fillText('Scene ' + (sceneIdx + 1) + ' of ' + sceneImages.length, 30, 610);
-
-                        ctx.restore();
-                    }
-
-                    currentFrame++;
-                    if (currentFrame < totalFrames) {
-                        requestAnimationFrame(renderFrame);
-                    } else {
-                        setTimeout(function() { recorder.stop(); }, 100);
-                    }
-                }
-
-                renderFrame();
-                await videoReady;
-
-                steps[2] = { label: 'Video composed (' + (totalFrames / fps).toFixed(0) + 's)', active: false, done: true };
+                steps[downloadStepIdx] = { label: 'Video downloaded (' + (videoBlob.size / 1024 / 1024).toFixed(1) + ' MB)', active: false, done: true };
                 updateProgress(steps);
 
                 // Show result
@@ -580,7 +450,7 @@
             if (!videoBlob) return;
             var a = document.createElement('a');
             a.href = URL.createObjectURL(videoBlob);
-            a.download = 'animated-story.webm';
+            a.download = 'veo-video.mp4';
             a.click();
         }
 
