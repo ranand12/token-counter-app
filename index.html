@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src https://generativelanguage.googleapis.com;">
     <title>Gemini Token Counter</title>
     <!--
     Copyright 2026 Google LLC.
@@ -124,6 +125,15 @@
         }
         .info a { color: #1a73e8; text-decoration: none; }
         .info a:hover { text-decoration: underline; }
+        .privacy-notice {
+            margin-top: 20px;
+            padding: 14px 16px;
+            background: #e6f4ea;
+            border-radius: 10px;
+            font-size: 12px;
+            color: #137333;
+            line-height: 1.5;
+        }
         code { background: #f1f3f4; padding: 2px 6px; border-radius: 4px; font-size: 13px; }
     </style>
 </head>
@@ -131,6 +141,11 @@
     <div class="container">
         <h1>Gemini Token Counter</h1>
         <p class="subtitle">Count tokens using the Gemini API's <code>countTokens</code> endpoint &mdash; no LLM call.</p>
+
+        <div class="field">
+            <label for="api-key-input">Your Gemini API Key</label>
+            <input type="password" id="api-key-input" placeholder="Enter your Gemini API key" autocomplete="off" data-lpignore="true" data-1p-ignore>
+        </div>
 
         <div class="field">
             <label for="model-input">Model</label>
@@ -148,10 +163,17 @@
         <div class="error" id="error"></div>
 
         <p class="info">~100 tokens = 60-80 English words &bull; <a href="models.html">Browse all models</a></p>
+
+        <div class="privacy-notice">
+            Your API key is never stored, logged, or sent to this site's servers. It is held only in browser memory and sent directly to the Google Gemini API. The key is cleared when you close this page.
+        </div>
     </div>
 
     <script>
+        const API_BASE = 'https://generativelanguage.googleapis.com/v1beta';
+
         async function countTokens() {
+            const apiKey = document.getElementById('api-key-input').value.trim();
             const model = document.getElementById('model-input').value.trim();
             const text = document.getElementById('text-input').value;
             const btn = document.getElementById('count-btn');
@@ -159,6 +181,12 @@
             const error = document.getElementById('error');
 
             error.classList.remove('visible');
+
+            if (!apiKey) {
+                error.textContent = 'Please enter your Gemini API key.';
+                error.classList.add('visible');
+                return;
+            }
 
             if (!model) {
                 error.textContent = 'Please enter a model name.';
@@ -176,14 +204,15 @@
             btn.textContent = 'Counting...';
 
             try {
-                const resp = await fetch('/count', {
+                const url = `${API_BASE}/models/${encodeURIComponent(model)}:countTokens?key=${encodeURIComponent(apiKey)}`;
+                const resp = await fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ text, model }),
+                    body: JSON.stringify({ contents: [{ parts: [{ text }] }] }),
                 });
 
                 const data = await resp.json();
-                if (data.error) throw new Error(data.error);
+                if (data.error) throw new Error(data.error.message || 'API error');
 
                 document.getElementById('token-count').textContent = data.totalTokens;
                 result.classList.add('visible');
@@ -198,6 +227,11 @@
 
         document.getElementById('text-input').addEventListener('keydown', (e) => {
             if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) countTokens();
+        });
+
+        // Clear API key from memory on page unload
+        window.addEventListener('beforeunload', () => {
+            document.getElementById('api-key-input').value = '';
         });
     </script>
 </body>
