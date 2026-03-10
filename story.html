@@ -23,6 +23,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="nav.css">
     <style>
         :root {
             --bg: #ffffff; --bg-elevated: #f5f6f8; --bg-card: #ffffff; --bg-input: #f5f6f8;
@@ -176,8 +177,15 @@
                     <input type="password" id="api-key-input" placeholder="Your Gemini key" autocomplete="off" data-lpignore="true" data-1p-ignore>
                 </div>
                 <div class="field">
-                    <label for="model-input">Model</label>
-                    <input type="text" id="model-input" value="gemini-2.0-flash-exp" placeholder="e.g. gemini-2.0-flash-exp">
+                    <label for="model-input">Text Model</label>
+                    <input type="text" id="model-input" value="gemini-2.5-flash" placeholder="e.g. gemini-2.5-flash">
+                </div>
+            </div>
+
+            <div class="field-row">
+                <div class="field">
+                    <label for="image-model-input">Image Model</label>
+                    <input type="text" id="image-model-input" value="gemini-3.1-flash-image-preview" placeholder="e.g. gemini-3.1-flash-image-preview">
                 </div>
             </div>
 
@@ -241,6 +249,7 @@
         async function generateStory() {
             var apiKey = document.getElementById('api-key-input').value.trim();
             var model = document.getElementById('model-input').value.trim();
+            var imageModel = document.getElementById('image-model-input').value.trim() || model;
             var storyIdea = document.getElementById('story-input').value.trim();
             var numPages = parseInt(document.getElementById('pages-input').value.trim()) || 4;
             var artStyle = document.getElementById('style-input').value.trim() || 'watercolor children\'s book illustration';
@@ -352,7 +361,7 @@
                         'Style: colorful, warm, child-friendly, no text in the image.';
 
                     try {
-                        var imgUrl = API_BASE + '/models/' + encodeURIComponent(model) + ':generateContent?key=' + encodeURIComponent(apiKey);
+                        var imgUrl = API_BASE + '/models/' + encodeURIComponent(imageModel) + ':generateContent?key=' + encodeURIComponent(apiKey);
                         var imgResp = await fetch(imgUrl, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
@@ -389,7 +398,7 @@
                         } else {
                             var fallback = document.createElement('div');
                             fallback.className = 'page-loading';
-                            fallback.textContent = 'Image not available (model may not support image generation)';
+                            fallback.textContent = 'Image not available. The image model "' + imageModel + '" may not support image generation. Try gemini-3.1-flash-image-preview.';
                             container.appendChild(fallback);
                         }
                     } catch (imgErr) {
@@ -420,5 +429,6 @@
             document.getElementById('api-key-input').value = '';
         });
     </script>
+    <script src="nav.js"></script>
 </body>
 </html>

@@ -172,14 +172,14 @@
                 </div>
                 <div class="field">
                     <label for="model-input">Text Model</label>
-                    <input type="text" id="model-input" value="gemini-2.0-flash" placeholder="e.g. gemini-2.0-flash">
+                    <input type="text" id="model-input" value="gemini-2.5-flash" placeholder="e.g. gemini-2.5-flash">
                 </div>
             </div>
 
             <div class="field-row">
                 <div class="field">
                     <label for="image-model-input">Image Model</label>
-                    <input type="text" id="image-model-input" value="gemini-2.0-flash-preview-image-generation" placeholder="e.g. gemini-2.0-flash-preview-image-generation">
+                    <input type="text" id="image-model-input" value="gemini-3.1-flash-image-preview" placeholder="e.g. gemini-3.1-flash-image-preview">
                 </div>
             </div>
 
@@ -431,7 +431,7 @@
                         thumb.src = loadedImg.src;
                         scenePreview.appendChild(thumb);
                     } else {
-                        throw new Error('Image generation failed for scene ' + (i + 1) + '. The image model "' + imageModel + '" may not support image generation. Try: gemini-2.0-flash-preview-image-generation or gemini-2.5-flash-preview-image-generation');
+                        throw new Error('Image generation failed for scene ' + (i + 1) + '. The image model "' + imageModel + '" may not support image generation. Try: gemini-3.1-flash-image-preview');
                     }
                 }
 
