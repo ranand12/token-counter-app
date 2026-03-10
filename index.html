@@ -180,7 +180,7 @@
         }
 
         .section {
-            margin-bottom: 32px;
+            margin-bottom: 24px;
             opacity: 0;
             animation: fadeUp 0.5s ease forwards;
         }
@@ -195,22 +195,22 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
         }
 
         .section-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 16px;
+            font-size: 13px;
             flex-shrink: 0;
         }
 
         .section-title {
-            font-size: 13px;
+            font-size: 11px;
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.1em;
@@ -227,8 +227,8 @@
         /* Cards Grid */
         .cards {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-            gap: 10px;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 140px));
+            gap: 8px;
         }
 
         .card {
@@ -421,7 +421,7 @@
     <div class="hero-label">Gemini API Toolkit</div>
     <h1>Explore <span>Gemini</span> Tools</h1>
     <p>Interactive browser tools for the Gemini API. No setup required &mdash; just add your API key and start experimenting.</p>
-    <div class="tool-count"><strong>20</strong> tools across 5 categories</div>
+    <div class="tool-count"><strong>21</strong> tools across 5 categories</div>
 </div>
 
 <div class="sections" id="sections"></div>
@@ -449,6 +449,7 @@
             { href: 'files.html', icon: '\u{1F4C2}', name: 'File Search', desc: 'Upload documents and search across them with natural language.', tag: 'Documents' },
             { href: 'research.html', icon: '\u{1F50E}', name: 'Deep Research', desc: 'Multi-step research agent that synthesizes information across sources.', tag: 'Agent' },
             { href: 'live.html', icon: '\u{1F3A4}', name: 'Live Chat', desc: 'Real-time voice and text conversation over WebSocket with the Live API.', tag: 'Streaming' },
+            { href: 'cache.html', icon: '\u{1F4E6}', name: 'Context Cache', desc: 'Cache large content once, then query it repeatedly to save cost and latency.', tag: 'Caching' },
         ]},
         { cat: 'Multimodal', catId: 'multimodal', icon: '\u{1F441}', items: [
             { href: 'describe.html', icon: '\u{1F5BC}', name: 'Image Describer', desc: 'Upload any image and get detailed AI-generated descriptions and analysis.', tag: 'Vision' },
