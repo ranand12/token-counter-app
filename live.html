@@ -448,6 +448,12 @@
                 <span class="status-dot" id="statusDot"></span>
                 <span class="status-text" id="statusText">Disconnected</span>
             </div>
+            <div style="margin-top:8px">
+                <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;margin-bottom:0">
+                    <input type="checkbox" id="searchToggle" checked style="width:auto;margin:0">
+                    <span style="font-weight:500;font-size:13px">Google Search grounding</span>
+                </label>
+            </div>
             <span class="system-instruction-toggle" onclick="toggleSysInstruction()">System instruction &#9662;</span>
             <div class="system-instruction-area" id="sysInstructionArea">
                 <textarea id="sysInstruction" placeholder="Optional system instruction...">You are a friendly and helpful assistant. Keep responses concise and conversational.</textarea>
@@ -655,6 +661,10 @@
                     setup.setup.systemInstruction = {
                         parts: [{ text: sysText }]
                     };
+                }
+
+                if (document.getElementById('searchToggle').checked) {
+                    setup.setup.tools = [{ googleSearch: {} }];
                 }
 
                 ws.send(JSON.stringify(setup));
