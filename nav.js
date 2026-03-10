@@ -64,7 +64,7 @@
     var brand = document.createElement('a');
     brand.className = 'gt-topbar-brand';
     brand.textContent = 'Gemini Tools';
-    brand.href = 'index.html';
+    brand.href = 'home.html';
     brand.style.textDecoration = 'none';
     brand.style.color = 'inherit';
     topbar.appendChild(brand);
@@ -151,7 +151,7 @@
     var sidebarBrand = document.createElement('a');
     sidebarBrand.className = 'gt-sidebar-brand';
     sidebarBrand.textContent = 'Gemini Tools';
-    sidebarBrand.href = 'index.html';
+    sidebarBrand.href = 'home.html';
     sidebarBrand.style.textDecoration = 'none';
     sidebarBrand.style.color = 'inherit';
     sidebarHeader.appendChild(sidebarBrand);
