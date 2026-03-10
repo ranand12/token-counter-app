@@ -136,6 +136,44 @@
         localStorage.setItem('theme', next);
     });
 
+    // Search button in topbar
+    var searchBtn = document.createElement('button');
+    searchBtn.className = 'gt-search-btn';
+    searchBtn.setAttribute('title', 'Search tools (Ctrl+K)');
+
+    var searchSvg = document.createElementNS(svgNS, 'svg');
+    searchSvg.setAttribute('viewBox', '0 0 24 24');
+    searchSvg.setAttribute('fill', 'none');
+    searchSvg.setAttribute('stroke', 'currentColor');
+    searchSvg.setAttribute('stroke-width', '2');
+    searchSvg.setAttribute('stroke-linecap', 'round');
+    searchSvg.setAttribute('stroke-linejoin', 'round');
+    var searchCircle = document.createElementNS(svgNS, 'circle');
+    searchCircle.setAttribute('cx', '11');
+    searchCircle.setAttribute('cy', '11');
+    searchCircle.setAttribute('r', '8');
+    searchSvg.appendChild(searchCircle);
+    var searchLine = document.createElementNS(svgNS, 'line');
+    searchLine.setAttribute('x1', '21');
+    searchLine.setAttribute('y1', '21');
+    searchLine.setAttribute('x2', '16.65');
+    searchLine.setAttribute('y2', '16.65');
+    searchSvg.appendChild(searchLine);
+    searchBtn.appendChild(searchSvg);
+
+    var kbdHint = document.createElement('span');
+    kbdHint.className = 'gt-search-kbd';
+    kbdHint.textContent = '\u2318K';
+    searchBtn.appendChild(kbdHint);
+
+    // Detect platform for shortcut hint
+    if (navigator.platform && navigator.platform.indexOf('Mac') === -1) {
+        kbdHint.textContent = 'Ctrl K';
+    }
+
+    searchBtn.addEventListener('click', function() { openCmdPalette(); });
+    topbar.appendChild(searchBtn);
+
     topbar.appendChild(themeBtn);
 
     // --- Build Overlay ---
@@ -206,28 +244,242 @@
         content.appendChild(sectionEl);
     });
 
+    // Sidebar search
+    var sidebarSearch = document.createElement('div');
+    sidebarSearch.className = 'gt-sidebar-search';
+    var sidebarSearchInput = document.createElement('input');
+    sidebarSearchInput.type = 'text';
+    sidebarSearchInput.placeholder = 'Search tools...';
+    sidebarSearch.appendChild(sidebarSearchInput);
+
+    // Insert search after header, before content
+    sidebar.insertBefore(sidebarSearch, content);
+
+    sidebarSearchInput.addEventListener('input', function() {
+        var q = this.value.toLowerCase().trim();
+        var sectionEls = content.querySelectorAll('.gt-sidebar-section');
+        sectionEls.forEach(function(secEl) {
+            var links = secEl.querySelectorAll('.gt-sidebar-link');
+            var anyVisible = false;
+            links.forEach(function(link) {
+                var text = link.textContent.toLowerCase();
+                if (!q || text.indexOf(q) !== -1) {
+                    link.classList.remove('search-hidden');
+                    anyVisible = true;
+                } else {
+                    link.classList.add('search-hidden');
+                }
+            });
+            if (!q || anyVisible) {
+                secEl.classList.remove('search-hidden-section');
+            } else {
+                secEl.classList.add('search-hidden-section');
+            }
+        });
+    });
+
     sidebar.appendChild(content);
+
+    // --- Build Command Palette (Ctrl+K) ---
+    var allTools = [];
+    sections.forEach(function(s) {
+        s.links.forEach(function(l) {
+            allTools.push({ href: l[0], name: l[1], desc: l[2] || '', cat: s.title || 'Home' });
+        });
+    });
+
+    var cmdBackdrop = document.createElement('div');
+    cmdBackdrop.className = 'gt-cmd-backdrop';
+
+    var cmdBox = document.createElement('div');
+    cmdBox.className = 'gt-cmd';
+
+    var cmdInputWrap = document.createElement('div');
+    cmdInputWrap.className = 'gt-cmd-input-wrap';
+
+    var cmdSearchIcon = searchSvg.cloneNode(true);
+    cmdInputWrap.appendChild(cmdSearchIcon);
+
+    var cmdInput = document.createElement('input');
+    cmdInput.className = 'gt-cmd-input';
+    cmdInput.type = 'text';
+    cmdInput.placeholder = 'Search tools...';
+    cmdInputWrap.appendChild(cmdInput);
+
+    cmdBox.appendChild(cmdInputWrap);
+
+    var cmdResults = document.createElement('div');
+    cmdResults.className = 'gt-cmd-results';
+    cmdBox.appendChild(cmdResults);
+
+    var cmdFooter = document.createElement('div');
+    cmdFooter.className = 'gt-cmd-footer';
+
+    // Build footer with kbd elements safely
+    var footerHints = [
+        ['\u2191\u2193', 'Navigate'],
+        ['\u21B5', 'Open'],
+        ['Esc', 'Close']
+    ];
+    footerHints.forEach(function(hint) {
+        var span = document.createElement('span');
+        var kbd = document.createElement('kbd');
+        kbd.textContent = hint[0];
+        span.appendChild(kbd);
+        span.appendChild(document.createTextNode(' ' + hint[1]));
+        cmdFooter.appendChild(span);
+    });
+
+    cmdBox.appendChild(cmdFooter);
+
+    cmdBackdrop.appendChild(cmdBox);
+
+    var cmdActiveIndex = -1;
+
+    function renderCmdResults(query) {
+        cmdResults.textContent = '';
+        cmdActiveIndex = -1;
+        var q = (query || '').toLowerCase().trim();
+        var matches = allTools.filter(function(t) {
+            if (!q) return true;
+            return t.name.toLowerCase().indexOf(q) !== -1 ||
+                   t.desc.toLowerCase().indexOf(q) !== -1 ||
+                   t.cat.toLowerCase().indexOf(q) !== -1;
+        });
+
+        // Group by category
+        var groups = {};
+        matches.forEach(function(t) {
+            if (!groups[t.cat]) groups[t.cat] = [];
+            groups[t.cat].push(t);
+        });
+
+        var allItems = [];
+        Object.keys(groups).forEach(function(cat) {
+            var title = document.createElement('div');
+            title.className = 'gt-cmd-group-title';
+            title.textContent = cat;
+            cmdResults.appendChild(title);
+
+            groups[cat].forEach(function(t) {
+                var item = document.createElement('a');
+                item.className = 'gt-cmd-item';
+                item.href = t.href;
+
+                var nameEl = document.createElement('div');
+                nameEl.className = 'gt-cmd-item-name';
+                nameEl.textContent = t.name;
+
+                var descEl = document.createElement('div');
+                descEl.className = 'gt-cmd-item-desc';
+                descEl.textContent = t.desc;
+
+                var textWrap = document.createElement('div');
+                textWrap.className = 'gt-cmd-item-text';
+                textWrap.appendChild(nameEl);
+                if (t.desc) textWrap.appendChild(descEl);
+
+                item.appendChild(textWrap);
+
+                cmdResults.appendChild(item);
+                allItems.push(item);
+            });
+        });
+
+        // Auto-select first
+        if (allItems.length > 0) {
+            cmdActiveIndex = 0;
+            allItems[0].classList.add('active');
+        }
+
+        return allItems;
+    }
+
+    var cmdItems = [];
+
+    function openCmdPalette() {
+        closeSidebar();
+        cmdBackdrop.classList.add('open');
+        cmdInput.value = '';
+        cmdItems = renderCmdResults('');
+        document.body.style.overflow = 'hidden';
+        setTimeout(function() { cmdInput.focus(); }, 50);
+    }
+
+    function closeCmdPalette() {
+        cmdBackdrop.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    cmdInput.addEventListener('input', function() {
+        cmdItems = renderCmdResults(this.value);
+    });
+
+    cmdInput.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (cmdItems.length === 0) return;
+            if (cmdActiveIndex >= 0) cmdItems[cmdActiveIndex].classList.remove('active');
+            cmdActiveIndex = (cmdActiveIndex + 1) % cmdItems.length;
+            cmdItems[cmdActiveIndex].classList.add('active');
+            cmdItems[cmdActiveIndex].scrollIntoView({ block: 'nearest' });
+        } else if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (cmdItems.length === 0) return;
+            if (cmdActiveIndex >= 0) cmdItems[cmdActiveIndex].classList.remove('active');
+            cmdActiveIndex = (cmdActiveIndex - 1 + cmdItems.length) % cmdItems.length;
+            cmdItems[cmdActiveIndex].classList.add('active');
+            cmdItems[cmdActiveIndex].scrollIntoView({ block: 'nearest' });
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (cmdActiveIndex >= 0 && cmdItems[cmdActiveIndex]) {
+                window.location.href = cmdItems[cmdActiveIndex].href;
+            }
+        }
+    });
+
+    cmdBackdrop.addEventListener('click', function(e) {
+        if (e.target === cmdBackdrop) closeCmdPalette();
+    });
 
     // --- Open / Close logic ---
     function openSidebar() {
         sidebar.classList.add('open');
         overlay.classList.add('open');
         document.body.style.overflow = 'hidden';
+        setTimeout(function() { sidebarSearchInput.focus(); }, 100);
     }
 
     function closeSidebar() {
         sidebar.classList.remove('open');
         overlay.classList.remove('open');
         document.body.style.overflow = '';
+        // Reset sidebar search
+        sidebarSearchInput.value = '';
+        sidebarSearchInput.dispatchEvent(new Event('input'));
     }
 
     hamburger.addEventListener('click', openSidebar);
     closeBtn.addEventListener('click', closeSidebar);
     overlay.addEventListener('click', closeSidebar);
 
-    // Close on Escape
+    // Close on Escape / open on Ctrl+K
     document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') closeSidebar();
+        if (e.key === 'Escape') {
+            if (cmdBackdrop.classList.contains('open')) {
+                closeCmdPalette();
+            } else {
+                closeSidebar();
+            }
+        }
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+            e.preventDefault();
+            if (cmdBackdrop.classList.contains('open')) {
+                closeCmdPalette();
+            } else {
+                openCmdPalette();
+            }
+        }
     });
 
     // --- Theme initialization ---
@@ -244,6 +496,7 @@
     document.body.insertBefore(topbar, document.body.firstChild);
     document.body.insertBefore(overlay, document.body.firstChild);
     document.body.insertBefore(sidebar, document.body.firstChild);
+    document.body.appendChild(cmdBackdrop);
 
     // Expose toggleTheme globally for any remaining inline onclick handlers
     window.toggleTheme = function() {
