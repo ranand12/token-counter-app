@@ -20,8 +20,17 @@
             ['embed.html', 'Embeddings', 'Compute text similarity'],
             ['search.html', 'Search', 'Grounded Google Search'],
             ['pdf.html', 'PDF Analyzer', 'Analyze PDF documents'],
+            ['url.html', 'URL Context', 'Summarize and analyze web pages'],
+            ['files.html', 'File Search', 'Upload and query documents'],
+        ]},
+        { title: 'AI Tools', links: [
+            ['think.html', 'Thinking', 'See model reasoning step by step'],
+            ['code.html', 'Code Runner', 'Generate and execute Python code'],
+            ['maps.html', 'Maps', 'Location-aware queries with Google Maps'],
+            ['research.html', 'Deep Research', 'Multi-step research agent'],
         ]},
         { title: 'Creative', links: [
+            ['tts.html', 'Text to Speech', 'Generate speech from text'],
             ['story.html', 'Story Illustrator', 'Generate illustrated storybooks'],
             ['animate.html', 'Animated Video', 'Create story videos with AI'],
         ]},
