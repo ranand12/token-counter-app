@@ -37,7 +37,7 @@
         { title: 'Creative', links: [
             ['tts.html', 'Text to Speech', 'Generate speech from text'],
             ['story.html', 'Story Illustrator', 'Generate illustrated storybooks'],
-            ['animate.html', 'Animated Video', 'Create story videos with AI'],
+            ['animate.html', 'AI Video Generator (Veo)', 'Create story videos with AI'],
         ]},
     ];
 

@@ -27,7 +27,7 @@ live.html (Live Chat), cache.html (Context Cache)
 - Vision: Image Describer, 3D Spatial, Video Analyzer
 - Text & Data: Playground, Extractor, Embeddings, Search, PDF, URL Context, File Search
 - AI Tools: Thinking, Code Runner, Maps, Deep Research, Live Chat, Context Cache
-- Creative: Text to Speech, Story Illustrator, Animated Video
+- Creative: Text to Speech, Story Illustrator, AI Video Generator (Veo)
 
 ## UX Principle
 - Pre-populate everything, use toggles/presets, minimize user input
