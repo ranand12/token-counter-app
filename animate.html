@@ -23,6 +23,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="nav.css">
     <style>
         :root {
             --bg: #ffffff; --bg-elevated: #f5f6f8; --bg-card: #ffffff; --bg-input: #f5f6f8;
@@ -178,7 +179,7 @@
             <div class="field-row">
                 <div class="field">
                     <label for="image-model-input">Image Model</label>
-                    <input type="text" id="image-model-input" value="gemini-2.0-flash-image" placeholder="e.g. gemini-2.0-flash-image">
+                    <input type="text" id="image-model-input" value="gemini-2.0-flash-preview-image-generation" placeholder="e.g. gemini-2.0-flash-preview-image-generation">
                 </div>
             </div>
 
@@ -409,17 +410,19 @@
                     });
 
                     var imgData = await imgResp.json();
+                    if (imgData.error) throw new Error('Image API error: ' + (imgData.error.message || JSON.stringify(imgData.error)));
                     var imagePart = null;
                     if (imgData.candidates && imgData.candidates[0] && imgData.candidates[0].content && imgData.candidates[0].content.parts) {
                         imgData.candidates[0].content.parts.forEach(function(part) {
-                            if (part.inline_data && part.inline_data.mime_type && part.inline_data.mime_type.startsWith('image/')) {
-                                imagePart = part.inline_data;
+                            var data = part.inlineData || part.inline_data;
+                            if (data && (data.mimeType || data.mime_type || '').startsWith('image/')) {
+                                imagePart = data;
                             }
                         });
                     }
 
                     if (imagePart) {
-                        var loadedImg = await loadImageFromBase64(imagePart.data, imagePart.mime_type);
+                        var loadedImg = await loadImageFromBase64(imagePart.data, imagePart.mimeType || imagePart.mime_type);
                         sceneImages.push({ img: loadedImg, narration: scene.narration });
 
                         var thumb = document.createElement('img');
@@ -428,7 +431,7 @@
                         thumb.src = loadedImg.src;
                         scenePreview.appendChild(thumb);
                     } else {
-                        throw new Error('Image generation failed for scene ' + (i + 1) + '. The image model "' + imageModel + '" may not support image generation. Try gemini-2.0-flash-image.');
+                        throw new Error('Image generation failed for scene ' + (i + 1) + '. The image model "' + imageModel + '" may not support image generation. Try: gemini-2.0-flash-preview-image-generation or gemini-2.5-flash-preview-image-generation');
                     }
                 }
 
@@ -589,5 +592,6 @@
             document.getElementById('api-key-input').value = '';
         });
     </script>
+    <script src="nav.js"></script>
 </body>
 </html>
