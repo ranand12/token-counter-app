@@ -96,14 +96,55 @@
             background-clip: text;
         }
 
-        .hero .count {
-            font-family: 'Space Mono', monospace;
-            font-size: 11px;
+        .hero-search {
+            flex: 1;
+            min-width: 180px;
+            max-width: 320px;
+            position: relative;
+        }
+
+        .hero-search svg {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 15px;
+            height: 15px;
             color: var(--text-muted);
-            padding: 3px 10px;
-            background: var(--bg-elevated);
+            pointer-events: none;
+        }
+
+        .hero-search input {
+            width: 100%;
+            padding: 8px 12px 8px 34px;
             border: 1px solid var(--border);
-            border-radius: 100px;
+            border-radius: 10px;
+            background: var(--bg-elevated);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .hero-search input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .hero-search input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 12%, transparent);
+        }
+
+        .hero-search .search-count {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-family: 'Space Mono', monospace;
+            font-size: 10px;
+            color: var(--text-muted);
+            pointer-events: none;
         }
 
         /* Category filter pills */
@@ -301,7 +342,11 @@
 <div class="page">
     <div class="hero">
         <h1>Explore <span>Gemini</span> Tools</h1>
-        <span class="count">21 tools</span>
+        <div class="hero-search">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" id="hero-filter" placeholder="Filter tools..." autocomplete="off">
+            <span class="search-count" id="search-count"></span>
+        </div>
     </div>
     <div class="filters" id="filters"></div>
     <div class="grid" id="grid"></div>
@@ -371,15 +416,33 @@
         filtersEl.appendChild(pill);
     });
 
+    // Text search
+    var heroFilter = document.getElementById('hero-filter');
+    var searchCount = document.getElementById('search-count');
+    var searchQuery = '';
+
+    heroFilter.addEventListener('input', function() {
+        searchQuery = this.value.toLowerCase().trim();
+        applyFilter();
+    });
+
     function applyFilter() {
         var tiles = document.querySelectorAll('.tile');
+        var visible = 0;
         tiles.forEach(function(t) {
-            if (activeFilter === 'all' || t.getAttribute('data-cat') === activeFilter) {
+            var catMatch = activeFilter === 'all' || t.getAttribute('data-cat') === activeFilter;
+            var textMatch = !searchQuery ||
+                t.getAttribute('data-name').indexOf(searchQuery) !== -1 ||
+                t.getAttribute('data-desc').indexOf(searchQuery) !== -1 ||
+                t.getAttribute('data-tag').indexOf(searchQuery) !== -1;
+            if (catMatch && textMatch) {
                 t.classList.remove('hidden');
+                visible++;
             } else {
                 t.classList.add('hidden');
             }
         });
+        searchCount.textContent = visible + '/' + tiles.length;
     }
 
     // Build tiles
@@ -390,6 +453,9 @@
         a.className = 'tile';
         a.href = item.href;
         a.setAttribute('data-cat', item.cat);
+        a.setAttribute('data-name', item.name.toLowerCase());
+        a.setAttribute('data-desc', item.desc.toLowerCase());
+        a.setAttribute('data-tag', item.tag.toLowerCase());
 
         var tip = document.createElement('div');
         tip.className = 'tile-tip';
@@ -413,6 +479,9 @@
 
         gridEl.appendChild(a);
     });
+
+    // Show initial count
+    applyFilter();
 })();
 </script>
 
