@@ -412,7 +412,7 @@ limitations under the License.
         </div>
 
         <footer class="privacy-notice">
-            <strong>Privacy:</strong> Your API key is stored in your browser's localStorage and is only sent to Google's Gemini API. Research queries and results are processed by Google's servers. This tool runs entirely in your browser.
+            <strong>Privacy:</strong> Your API key is saved in your browser's session storage &mdash; shared across all Gemini Tools pages, but automatically cleared when you close the tab. It is only sent directly to the Google Gemini API. Research queries and results are processed by Google's servers. This tool runs entirely in your browser.
         </footer>
     </div>
 
@@ -439,14 +439,11 @@ limitations under the License.
 
         // API key management
         function loadApiKey() {
-            const saved = localStorage.getItem('gemini_api_key');
-            if (saved) {
-                document.getElementById('apiKey').value = saved;
-            }
+            // API key is now loaded by nav.js from sessionStorage
         }
 
         function saveApiKey(key) {
-            localStorage.setItem('gemini_api_key', key);
+            // API key is now saved by nav.js to sessionStorage
         }
 
         // Preset management

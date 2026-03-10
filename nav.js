@@ -5,6 +5,9 @@
     var currentPage = location.pathname.split('/').pop() || 'index.html';
 
     var sections = [
+        { title: '', links: [
+            ['home.html', 'Home', 'All tools at a glance'],
+        ]},
         { title: 'Analyze', links: [
             ['index.html', 'Token Counter', 'Count tokens in text and images'],
             ['models.html', 'Model Explorer', 'Browse available Gemini models'],
@@ -240,5 +243,36 @@
         var next = current === 'dark' ? 'light' : 'dark';
         document.documentElement.setAttribute('data-theme', next);
         localStorage.setItem('theme', next);
+    };
+
+    // --- Shared API Key (sessionStorage) ---
+    var STORAGE_KEY = 'gemini-api-key';
+
+    // Auto-populate API key input on page load
+    var keyInput = document.getElementById('api-key-input') || document.getElementById('apiKey');
+    if (keyInput) {
+        var saved = sessionStorage.getItem(STORAGE_KEY);
+        if (saved) keyInput.value = saved;
+
+        // Save key to sessionStorage on input change
+        keyInput.addEventListener('input', function() {
+            var val = this.value.trim();
+            if (val) {
+                sessionStorage.setItem(STORAGE_KEY, val);
+            } else {
+                sessionStorage.removeItem(STORAGE_KEY);
+            }
+        });
+    }
+
+    // Expose helper for pages to save API key programmatically
+    window.saveApiKey = function(key) {
+        if (key) sessionStorage.setItem(STORAGE_KEY, key);
+    };
+
+    window.clearApiKey = function() {
+        sessionStorage.removeItem(STORAGE_KEY);
+        var input = document.getElementById('api-key-input') || document.getElementById('apiKey');
+        if (input) input.value = '';
     };
 })();

@@ -8,7 +8,8 @@
 
 ## Conventions
 - Each page is self-contained: HTML + inline `<style>` + inline `<script>`
-- API key stored in browser memory only, never persisted
+- API key persisted in sessionStorage (shared across pages in same tab, cleared on tab close)
+- API key load/save logic centralized in nav.js — individual pages should NOT manage key persistence
 - CSP meta tag on each page restricts sources
 - Nav links listed in every page's `<nav>` — update all pages when adding a new tool
 - Design: minimal, card-based layout with var(--accent) indigo theme

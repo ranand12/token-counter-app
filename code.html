@@ -170,7 +170,7 @@
         <div class="footer">
             <div class="privacy-notice">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-                <span>Your API key stays in browser memory only &mdash; never stored, logged, or sent to this site. Sent directly to the Google Gemini API and cleared when you leave.</span>
+                <span>Your API key is saved in your browser's session storage &mdash; shared across all Gemini Tools pages, but automatically cleared when you close the tab. It is only sent directly to the Google Gemini API.</span>
             </div>
         </div>
     </div>
@@ -320,14 +320,6 @@
             }
         });
 
-        // Warn before leaving if API key is entered
-        window.addEventListener('beforeunload', function(e) {
-            var apiKey = document.getElementById('api-key-input').value.trim();
-            if (apiKey) {
-                e.preventDefault();
-                e.returnValue = '';
-            }
-        });
     </script>
     <script src="nav.js"></script>
 </body>

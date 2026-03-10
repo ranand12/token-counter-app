@@ -349,8 +349,8 @@
 
         <div class="footer">
             <p class="privacy-notice">
-                Your API key is stored locally in your browser and never sent to any server except Google's Gemini API.
-                All processing happens client-side. See <a href="https://ai.google.dev/gemini-api/docs/api-key" target="_blank">API documentation</a> for more information.
+                Your API key is saved in your browser's session storage &mdash; shared across all Gemini Tools pages, but automatically cleared when you close the tab. It is only sent directly to the Google Gemini API.
+                See <a href="https://ai.google.dev/gemini-api/docs/api-key" target="_blank">API documentation</a> for more information.
             </p>
         </div>
     </div>
@@ -523,16 +523,6 @@
             }
         });
 
-        // Load saved API key
-        (function() {
-            const saved = localStorage.getItem('gemini_api_key');
-            if (saved) document.getElementById('apiKey').value = saved;
-        })();
-
-        // Save API key on use
-        document.getElementById('apiKey').addEventListener('change', function() {
-            if (this.value.trim()) localStorage.setItem('gemini_api_key', this.value.trim());
-        });
     </script>
 
     <script src="nav.js"></script>
