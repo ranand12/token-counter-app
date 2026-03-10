@@ -94,7 +94,7 @@
         .point-dot:hover + .point-label, .point-dot.highlight + .point-label { background: #FF4081; }
 
         .box3d-layout { display: flex; gap: 20px; flex-wrap: wrap; }
-        .box3d-image-panel { flex: 1; min-width: 300px; position: relative; }
+        .box3d-image-panel { flex: 1; min-width: 300px; position: relative; overflow: hidden; border-radius: 8px; }
         .box3d-image-panel canvas { max-width: 100%; border-radius: 8px; border: 1px solid var(--border); display: block; }
         .box3d-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
         .box3d-overlay .box-label { pointer-events: auto; }
