@@ -1,4 +1,4 @@
-"""Token Counter Web App"""
+"""Gemini Explorer Web App"""
 
 import json
 import os
