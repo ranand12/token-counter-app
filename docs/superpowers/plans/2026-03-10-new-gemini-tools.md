@@ -85,7 +85,7 @@ Replace the `sections` array (lines 7-28) with:
 ```javascript
 var sections = [
     { title: 'Analyze', links: [
-        ['index.html', 'Token Counter', 'Count tokens in text and images'],
+        ['index.html', 'Home', 'All tools at a glance'],
         ['models.html', 'Model Explorer', 'Browse available Gemini models'],
     ]},
     { title: 'Vision', links: [

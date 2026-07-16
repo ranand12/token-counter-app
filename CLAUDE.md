@@ -1,4 +1,4 @@
-# Token Counter App (Gemini Tools)
+# Gemini Explorer
 
 ## Project Structure
 - Static HTML app — each tool is a standalone `.html` file (no build system, no framework)
